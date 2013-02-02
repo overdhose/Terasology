@@ -42,6 +42,7 @@ import org.terasology.performanceMonitor.PerformanceMonitor;
 import org.terasology.physics.CollisionGroupManager;
 import org.terasology.version.TerasologyVersion;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -377,17 +378,25 @@ public class TerasologyEngine implements GameEngine {
     }
 
     private void checkOpenGL() {
-        boolean canRunGame = GLContext.getCapabilities().OpenGL20
-                & GLContext.getCapabilities().OpenGL11
-                & GLContext.getCapabilities().OpenGL12
-                & GLContext.getCapabilities().OpenGL14
-                & GLContext.getCapabilities().OpenGL15;
+        boolean canRunGame =
+                GLContext.getCapabilities().OpenGL20
+                && GLContext.getCapabilities().OpenGL11
+                && GLContext.getCapabilities().OpenGL12
+                && GLContext.getCapabilities().OpenGL14
+                && GLContext.getCapabilities().OpenGL15
+                && GLContext.getCapabilities().GL_ARB_framebuffer_object
+                && GLContext.getCapabilities().GL_ARB_texture_float
+                && GLContext.getCapabilities().GL_ARB_half_float_pixel
+                && GLContext.getCapabilities().GL_ARB_shader_objects;
 
         if (!canRunGame) {
-            logger.error("Your GPU driver is not supporting the mandatory versions of OpenGL. Considered updating your GPU drivers?");
+            final String message = "Your GPU driver is not supporting the mandatory versions of OpenGL or some needed OpenGL extension. Considered updating your GPU drivers? Exiting...";
+
+            logger.error(message);
+            JOptionPane.showMessageDialog(null, message, "Mandatory OpenGL version(s) not supported", JOptionPane.ERROR_MESSAGE);
+
             System.exit(1);
         }
-
     }
 
     private void resizeViewport() {

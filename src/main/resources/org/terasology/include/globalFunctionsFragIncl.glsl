@@ -45,7 +45,7 @@ float calcSpecLight(vec3 normal, vec3 lightVec, vec3 eyeVec, float exp) {
 }
 
 float calcTorchlight(float light, vec3 lightPos) {
-    return light * clamp(1.0 - (length(lightPos) / 16.0), 0.0, 1.0);
+    return light * clamp(1.0 - (length(lightPos) / 8.0), 0.0, 1.0);
 }
 
 vec4 linearToSrgb(vec4 color) {
@@ -72,4 +72,8 @@ float timeToTick(float time, float speed) {
 float fresnel(float nDotL, float fresnelBias, float fresnelPow) {
   float facing = (1.0 - nDotL);
   return max(fresnelBias + (1.0 - fresnelBias) * pow(facing, fresnelPow), 0.0);
+}
+
+bool checkFlag (int flag, float val) {
+    return val > float(flag) - 0.5 && val < float(flag) + 0.5;
 }
