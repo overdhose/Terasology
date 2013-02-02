@@ -294,8 +294,12 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 		}else if(minioncomp.assignedzone.zonetype != ZoneType.Work){
 			if(minioncomp.assignedzone.zonetype == ZoneType.OreonFarm){
 				if(minioncomp.assignedzone.isTerraformComplete()){
-					//farming
-					executeFarmmAI(entity);
+					//check if farm has unplanted spots
+					if(minioncomp.assignedzone.checkFarm(false)){
+						executeFarmmAI(entity);
+					}else if(minioncomp.assignedzone.checkFarm(true)){
+						//tend to the crop.
+					}
 				}else{
 					executeTerraformAI(entity, "miniion:OreonFarmDry");
 				}
@@ -413,7 +417,12 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 		}
 		
 		if (ai.movementTargets.size() == 0) {
+			if(minioncomp.assignedzone.zonetype == ZoneType.Terraform){
 				getFirsBlockfromZone(minioncomp, ai);
+			}else
+			if(minioncomp.assignedzone.zonetype == ZoneType.OreonFarm){
+				getUnplantedBlockfromZone(minioncomp, ai);
+			}
 		}
 		
 		Vector3f currentTarget = ai.movementTargets.get(0);
@@ -480,6 +489,11 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 		setMovement(currentTarget, entity);
 	}
 	
+	/**
+	 * returns the top block for all positions
+	 * @param minioncomp
+	 * @param ai
+	 */
 	private void getFirsBlockfromZone(MinionComponent minioncomp,	SimpleMinionAIComponent ai) {
 		Zone zone = minioncomp.assignedzone;		
 		for (int x = zone.getMinBounds().x; x <= zone.getMaxBounds().x; x++) {
@@ -489,6 +503,29 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 					if (!tmpblock.isInvisible()) {
 						ai.movementTargets.add(new Vector3f(x, (y + 0.5f), z));
 						break;
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * returns the top block for all positions that have air above it
+	 * @param minioncomp
+	 * @param ai
+	 */
+	private void getUnplantedBlockfromZone(MinionComponent minioncomp,	SimpleMinionAIComponent ai) {
+		Zone zone = minioncomp.assignedzone;		
+		for (int x = zone.getMinBounds().x; x <= zone.getMaxBounds().x; x++) {
+			for (int z = zone.getMinBounds().z; z <= zone.getMaxBounds().z; z++) {
+				for (int y = zone.getMaxBounds().y; y >= zone.getMinBounds().y; y--) {
+					Block tmpblock = worldProvider.getBlock(x, y, z);
+					if (!tmpblock.isInvisible()) {
+						tmpblock = worldProvider.getBlock(x, y+1, z);
+						if (tmpblock.getURI().getFamily().matches("air")) {
+							ai.movementTargets.add(new Vector3f(x, (y + 0.5f), z));
+							break;
+						}
 					}
 				}
 			}

@@ -146,6 +146,27 @@ public class Zone {
 		}
 		return retval;
 	}
+	
+	public boolean checkFarm(boolean fullgrown){
+		if(this.zonetype != ZoneType.OreonFarm){
+			return false;
+		}
+		worldProvider = CoreRegistry.get(WorldProvider.class);
+		int y = getMaxBounds().y + 1;
+		for (int x = getMinBounds().x; x <= getMaxBounds().x; x++) {
+			for (int z = getMinBounds().z; z <= getMaxBounds().z; z++) {
+				if(fullgrown){
+					if(worldProvider.getBlock(x, y, z).getURI().getFamily().matches("OreonPlant6")){
+						return true;
+					}
+				}
+				else if(worldProvider.getBlock(x, y, z).getURI().getFamily().matches("air")){
+					return true;
+				}					
+			}
+		}
+		return false;
+	}
 
 	private int getAbsoluteDiff(int val1, int val2) {
 		int width;

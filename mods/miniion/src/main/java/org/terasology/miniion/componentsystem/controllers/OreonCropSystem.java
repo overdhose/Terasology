@@ -53,14 +53,10 @@ public class OreonCropSystem implements EventHandlerSystem, UpdateSubscriberSyst
 		for (EntityRef entity : entityManager.iteratorEntities(OreonCropComponent.class)){
 			if(entity.hasComponent(BlockComponent.class)){
 				OreonCropComponent crop = entity.getComponent(OreonCropComponent.class);
-				if(crop.fullgrown){
+				if(crop.isFullgrown()){
 					return;
-				}
-				if(crop.lastgrowthcheck == -1){
-					crop.lastgrowthcheck = timer.getTimeInMs();
-					return;
-				}
-				if(timer.getTimeInMs() - crop.lastgrowthcheck > 54000000){
+				}//0000
+				if(timer.getTimeInMs() - crop.lastgrowthcheck > 5400){
 					crop.lastgrowthcheck = timer.getTimeInMs();
 					if(entity.hasComponent(LocationComponent.class)){
 						LocationComponent locComponent = entity.getComponent(LocationComponent.class);
@@ -70,7 +66,7 @@ public class OreonCropSystem implements EventHandlerSystem, UpdateSubscriberSyst
 						if(crop.stages -1 > currentstage){
 							currentstage++;
 							if(currentstage == crop.stages -1){
-								crop.fullgrown = true;
+								crop.setFullGrown();
 							}
 							oldUri = oldUri.substring(0, oldUri.length()-1) + currentstage;
 							Block newBlock = BlockManager.getInstance().getBlock(oldblock.getURI().getPackage() + ":" + oldUri);
