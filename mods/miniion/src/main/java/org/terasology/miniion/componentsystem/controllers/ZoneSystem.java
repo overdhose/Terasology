@@ -32,11 +32,11 @@ import org.terasology.world.chunks.ChunkProvider;
 @RegisterComponentSystem(headedOnly = true)
 public class ZoneSystem implements UpdateSubscriberSystem, RenderSystem {
 
-	private EntityManager entityManager;
+	//private EntityManager entityManager;
 
 	@Override
 	public void initialise() {
-		entityManager = CoreRegistry.get(EntityManager.class);
+		//entityManager = CoreRegistry.get(EntityManager.class);
 	}
 
 	@Override

@@ -34,4 +34,5 @@ public class ZoneListComponent implements Component {
 	public List<Zone> Terrazones = new ArrayList<Zone>();
 	public List<Zone> Storagezones = new ArrayList<Zone>();
 	public List<Zone> OreonFarmzones = new ArrayList<Zone>();
+	public List<Zone> Residentialzones = new ArrayList<Zone>();
 }

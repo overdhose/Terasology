@@ -15,6 +15,7 @@
  */
 package org.terasology.miniion.gui;
 
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.vecmath.Vector2f;
@@ -42,7 +43,7 @@ import org.terasology.rendering.gui.widgets.*;
 
 public class UIActiveMinion extends UIWindow{
 	
-	private final UILabel lblname, lblflavor, lblzone, lblrecipe;
+	private final UILabel lblname, lblflavor, lblzone, lblrecipe, lblMessage;
 	private final UIImage backgroundmain;
 	private final UIComposite behaviourlist, actionlist;
 	private final UIList uiMainlist, uiDetailList;
@@ -106,6 +107,13 @@ public class UIActiveMinion extends UIWindow{
 		lblflavor.setSize(new Vector2f(250, 30));
 		lblflavor.setVisible(true);
 		backgroundmain.addDisplayElement(lblflavor);
+		
+		lblMessage = new UILabel();
+		lblMessage.setPosition(new Vector2f(30, 100));
+		lblMessage.setWrap(true);
+		lblMessage.setSize(new Vector2f(250, 60));
+		lblMessage.setVisible(true);
+		backgroundmain.addDisplayElement(lblMessage);
 		
 		lblzone = new UILabel();
 		lblzone.setPosition(new Vector2f(10, 65));
@@ -478,58 +486,27 @@ public class UIActiveMinion extends UIWindow{
 			if(listitem.getValue().getClass().equals(ZoneType.class)){
 				switch(((ZoneType)listitem.getValue())){
 				case Gather: {
-					uiDetailList.removeAll();
-					for (Zone zone : MinionSystem.getGatherZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.addClickListener(zoneItemListener);
-						uiDetailList.addItem(newlistitem);
-					}
-					uiMainlist.setVisible(false);
-					uiDetailList.setVisible(true);
+					fillDetailList(MinionSystem.getGatherZoneList());
 					break;
 				}
 				case Terraform: {
-					uiDetailList.removeAll();
-					for (Zone zone : MinionSystem.getTerraformZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.addClickListener(zoneItemListener);
-						uiDetailList.addItem(newlistitem);
-					}
-					uiMainlist.setVisible(false);
-					uiDetailList.setVisible(true);
+					fillDetailList(MinionSystem.getTerraformZoneList());
 					break;
 				}
 				case Work : {
-					uiDetailList.removeAll();
-					for (Zone zone : MinionSystem.getWorkZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.addClickListener(zoneItemListener);
-						uiDetailList.addItem(newlistitem);
-					}
-					uiMainlist.setVisible(false);
-					uiDetailList.setVisible(true);
+					fillDetailList(MinionSystem.getWorkZoneList());
 					break;
 				}
 				case Storage : {
-					uiDetailList.removeAll();
-					for (Zone zone : MinionSystem.getStorageZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.addClickListener(zoneItemListener);
-						uiDetailList.addItem(newlistitem);
-					}
-					uiMainlist.setVisible(false);
-					uiDetailList.setVisible(true);
+					fillDetailList(MinionSystem.getStorageZoneList());
 					break;
 				}
 				case OreonFarm : {
-					uiDetailList.removeAll();
-					for (Zone zone : MinionSystem.getOreonFarmZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.addClickListener(zoneItemListener);
-						uiDetailList.addItem(newlistitem);
-					}
-					uiMainlist.setVisible(false);
-					uiDetailList.setVisible(true);
+					fillDetailList(MinionSystem.getOreonFarmZoneList());
+					break;
+				}
+				case Residential : {					
+					fillDetailList(MinionSystem.getResidentialZoneList());
 					break;
 				}
 				default : {					
@@ -546,6 +523,17 @@ public class UIActiveMinion extends UIWindow{
 			}
 		}
 	};
+	
+	private void fillDetailList(List<Zone> zonelist){
+		uiDetailList.removeAll();
+		for (Zone zone : zonelist) {
+			UIListItem newlistitem = new UIListItem(zone.Name, zone);
+			newlistitem.addClickListener(zoneItemListener);
+			uiDetailList.addItem(newlistitem);
+		}
+		uiMainlist.setVisible(false);
+		uiDetailList.setVisible(true);
+	}
 	
 	private ClickListener recipeItemListener = new ClickListener() {
 		

@@ -15,6 +15,7 @@
  */
 package org.terasology.miniion.gui;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.vecmath.Vector2f;
@@ -59,68 +60,27 @@ public class UIZoneBook extends UIWindow {
 			if(listitem.getValue().getClass().equals(ZoneType.class)){
 				switch(((ZoneType)listitem.getValue())){
 				case Gather: {
-					uizonelist.removeAll();
-					for (Zone zone : MinionSystem.getGatherZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.setTextColor(Color.black);
-						newlistitem.addClickListener(zonelistener);
-						uizonelist.addItem(newlistitem);
-					}
-					uizonelistgroup.setVisible(false);
-					uizonelist.setVisible(true);
-					btnBack.setVisible(true);
+					fillZoneList(MinionSystem.getGatherZoneList());
 					break;
 				}
 				case Terraform: {
-					uizonelist.removeAll();
-					for (Zone zone : MinionSystem.getTerraformZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.setTextColor(Color.black);
-						newlistitem.addClickListener(zonelistener);
-						uizonelist.addItem(newlistitem);
-					}
-					uizonelistgroup.setVisible(false);
-					uizonelist.setVisible(true);
-					btnBack.setVisible(true);
+					fillZoneList(MinionSystem.getTerraformZoneList());
 					break;
 				}
 				case Work : {
-					uizonelist.removeAll();
-					for (Zone zone : MinionSystem.getWorkZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.setTextColor(Color.black);
-						newlistitem.addClickListener(zonelistener);
-						uizonelist.addItem(newlistitem);
-					}
-					uizonelistgroup.setVisible(false);
-					uizonelist.setVisible(true);
-					btnBack.setVisible(true);
+					fillZoneList(MinionSystem.getWorkZoneList());
 					break;
 				}
 				case Storage : {
-					uizonelist.removeAll();
-					for (Zone zone : MinionSystem.getStorageZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.setTextColor(Color.black);
-						newlistitem.addClickListener(zonelistener);
-						uizonelist.addItem(newlistitem);
-					}
-					uizonelistgroup.setVisible(false);
-					uizonelist.setVisible(true);
-					btnBack.setVisible(true);
+					fillZoneList(MinionSystem.getStorageZoneList());
 					break;
 				}
 				case OreonFarm : {
-					uizonelist.removeAll();
-					for (Zone zone : MinionSystem.getOreonFarmZoneList()) {
-						UIListItem newlistitem = new UIListItem(zone.Name, zone);
-						newlistitem.setTextColor(Color.black);
-						newlistitem.addClickListener(zonelistener);
-						uizonelist.addItem(newlistitem);
-					}
-					uizonelistgroup.setVisible(false);
-					uizonelist.setVisible(true);
-					btnBack.setVisible(true);
+					fillZoneList(MinionSystem.getOreonFarmZoneList());
+					break;
+				}
+				case Residential : {
+					fillZoneList(MinionSystem.getResidentialZoneList());
 					break;
 				}
 				default : {					
@@ -138,30 +98,25 @@ public class UIZoneBook extends UIWindow {
 				txtheight.setText("" + zone.zoneheight);
 				txtwidth.setText("" + zone.zonewidth);
 				txtdepth.setText("" + zone.zonedepth);
-				switch(zone.zonetype){
-					case Gather: {
-						lblzonetype.setText("Zonetype : Gather");
-						break;
-					}
-					case Terraform: {
-						lblzonetype.setText("Zonetype : Terraform");
-						break;
-					}
-					case Work : {
-						lblzonetype.setText("Zonetype : Work");
-						break;
-					}
-					default : {
-						lblzonetype.setText("label wasn't set");
-						break;
-					}
-				}
-				
+				lblzonetype.setText("Zonetype : " + zone.zonetype.toString());								
 				btnSave.setVisible(false);
 				btnDelete.setVisible(true);
 			}
 		}
 	};
+	
+	private void fillZoneList(List<Zone> zonelist){
+		uizonelist.removeAll();
+		for (Zone zone : zonelist) {
+			UIListItem newlistitem = new UIListItem(zone.Name, zone);
+			newlistitem.setTextColor(Color.black);
+			newlistitem.addClickListener(zonelistener);
+			uizonelist.addItem(newlistitem);
+		}
+		uizonelistgroup.setVisible(false);
+		uizonelist.setVisible(true);
+		btnBack.setVisible(true);
+	}
 	
 	public UIZoneBook() {
 
@@ -359,6 +314,12 @@ public class UIZoneBook extends UIWindow {
 				return;
 			}
 		}
+		for (Zone zone : MinionSystem.getResidentialZoneList()) {
+			if (zone.Name.matches(txtzonename.getText())) {
+				lblError.setText("Zone name already exists!");
+				return;
+			}
+		}
 		int tmp;
 		try {
 			tmp = Integer.parseInt(txtheight.getText());
@@ -408,6 +369,10 @@ public class UIZoneBook extends UIWindow {
 				MinionSystem.getOreonFarmZoneList().remove(deletezone);
 				break;
 			}
+			case Residential : {
+				MinionSystem.getOreonFarmZoneList().remove(deletezone);
+				break;
+			}
 		}		
 		fillUI();
 	}
@@ -423,9 +388,7 @@ public class UIZoneBook extends UIWindow {
 		resetInput();
 
 		if (MinionSystem.getNewZone() != null	&& MinionSystem.getNewZone().getEndPosition() == null) {				
-			if(checkSingleZone()){										 					
-				Vector3i minbounds = MinionSystem.getNewZone().getMinBounds();
-				Vector3i maxbounds = MinionSystem.getNewZone().getMaxBounds();					
+			if(checkSingleZone()){										 									
 				txtwidth.setText("1");
 				txtdepth.setText("1");
 				txtheight.setText("1");
@@ -513,6 +476,9 @@ public class UIZoneBook extends UIWindow {
 		listitem.setTextColor(Color.black);
 		cmbType.addItem(listitem);
 		listitem = new UIListItem(ZoneType.OreonFarm.toString(), ZoneType.OreonFarm);
+		listitem.setTextColor(Color.black);
+		cmbType.addItem(listitem);
+		listitem = new UIListItem(ZoneType.OreonFarm.toString(), ZoneType.Residential);
 		listitem.setTextColor(Color.black);
 		cmbType.addItem(listitem);
 	}

@@ -35,7 +35,6 @@ import org.terasology.game.Timer;
 import org.terasology.logic.LocalPlayer;
 import org.terasology.math.Vector3i;
 import org.terasology.miniion.components.*;
-import org.terasology.miniion.events.MinionMessageEvent;
 import org.terasology.miniion.pathfinder.AStarPathing;
 import org.terasology.miniion.minionenum.MinionMessagePriority;
 import org.terasology.miniion.minionenum.ZoneType;
@@ -118,7 +117,6 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 					//need to save components for data to persist when game restarts
 					entity.saveComponent(minioncomp);
 				}else{
-					//die? reset for now so you see effect
 					minioncomp.Hunger = 100;
 				}
 			}
@@ -292,6 +290,7 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 			changeAnimation(entity, animcomp.idleAnim, true);
 			return;
 		}else if(minioncomp.assignedzone.zonetype != ZoneType.Work){
+			//redirect to farming steps
 			if(minioncomp.assignedzone.zonetype == ZoneType.OreonFarm){
 				if(minioncomp.assignedzone.isTerraformComplete()){
 					//check if farm has unplanted spots
@@ -299,14 +298,22 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 						executeFarmmAI(entity);
 					}else if(minioncomp.assignedzone.checkFarm(true)){
 						//tend to the crop.
+					}else{
+						//nothing to do, go fish
+						changeAnimation(entity, animcomp.idleAnim, true);
 					}
 				}else{
 					executeTerraformAI(entity, "miniion:OreonFarmDry");
 				}
-			}else{
+			}
+			else if(minioncomp.assignedzone.zonetype == ZoneType.Residential){
+				//redirect to building.
+			}
+			else{
 				changeAnimation(entity, animcomp.idleAnim, true);
 				
 			}
+			
 			return;
 		}
 		
@@ -552,6 +559,9 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 		
 		if (ai.movementTargets.size() == 0) {
 			getFirsBlockfromZone(minioncomp, ai);
+			if (ai.movementTargets.size() == 0){
+				return;
+			}
 		}
 		
 		Vector3f currentTarget = ai.movementTargets.get(0);
@@ -701,7 +711,7 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 					MinionMessage messagetosend = new MinionMessage(
 							MinionMessagePriority.Debug, "test", "testdesc",
 							"testcont", entity, localPlayer.getEntity());
-					entity.send(new MinionMessageEvent(messagetosend));
+					//entity.send(new MinionMessageEvent(messagetosend));
 					ai.movementTargets.remove(0);
 				}
 			}

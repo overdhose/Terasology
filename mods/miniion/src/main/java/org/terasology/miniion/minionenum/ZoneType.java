@@ -20,6 +20,7 @@ public enum ZoneType {
 	Work,	
 	Terraform,
 	OreonFarm,
+	Residential,
 	Storage
 }
 

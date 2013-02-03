@@ -222,6 +222,10 @@ public class MinionSystem implements EventHandlerSystem {
 				zonelistcomp.OreonFarmzones.add(zone);
 				break;
 			}
+			case Residential : {
+				zonelistcomp.Residentialzones.add(zone);
+				break;
+			}
 		}		
 		zonelist.saveComponent(zonelistcomp);
 	}
@@ -284,6 +288,18 @@ public class MinionSystem implements EventHandlerSystem {
 			return null;
 		}
 		return zonelist.getComponent(ZoneListComponent.class).OreonFarmzones;
+	}
+	
+	/**
+	 * returns a list with all Residential zones
+	 * @return
+	 * 			a list with all Residential zones
+	 */
+	public static List<Zone> getResidentialZoneList() {
+		if (zonelist == null) {
+			return null;
+		}
+		return zonelist.getComponent(ZoneListComponent.class).Residentialzones;
 	}
 	
 	public static List<MinionRecipe> getRecipesList(){
