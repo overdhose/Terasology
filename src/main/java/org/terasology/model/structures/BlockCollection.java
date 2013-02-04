@@ -116,7 +116,8 @@ public class BlockCollection {
         logger.debug("Going to build this collection into the world at {}, attaching at relative {}", position, _attachPos);
         //System.out.println(toString());
 
-        List<BlockUpdate> updates = Lists.newArrayListWithCapacity(buildingBlocks.getBlocks().size());
+        //seems useless, commented out
+        //List<BlockUpdate> updates = Lists.newArrayListWithCapacity(buildingBlocks.getBlocks().size());
         for (BlockPosition pos : buildingBlocks.getBlocks().keySet()) {
             //System.out.println("Processing block " + getBlock(pos) + " relative position " + pos);
             int x = position.x + pos.x - _attachPos.x;

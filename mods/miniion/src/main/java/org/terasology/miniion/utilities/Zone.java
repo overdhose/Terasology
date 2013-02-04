@@ -48,7 +48,9 @@ public class Zone {
     
 	private Vector3i startposition;
 	private Vector3i endposition;
-	private boolean terraformcomplete = false;
+	//used by terraforming and building
+	//true when the corresponding action is finished.
+	private boolean actioncomplete = false; 
 	//used to undo zones with unbreakable blocks
 	//zone set to delete untill blocks are removed
 	private boolean deleted = false;
@@ -123,12 +125,12 @@ public class Zone {
 		return maxbounds;
 	}
 	
-	public boolean isTerraformComplete(){
-		return terraformcomplete;
+	public boolean isActionComplete(){
+		return actioncomplete;
 	}
 	
-	public void setTerraformComplete(){
-		terraformcomplete = true;
+	public void setActionComplete(){
+		actioncomplete = true;
 	}
 
 	public boolean outofboundselection(){

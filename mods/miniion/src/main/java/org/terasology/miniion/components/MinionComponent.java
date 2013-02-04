@@ -19,6 +19,7 @@ import org.terasology.entitySystem.Component;
 import org.terasology.miniion.minionenum.MinionBehaviour;
 import org.terasology.miniion.utilities.MinionRecipe;
 import org.terasology.miniion.utilities.Zone;
+import org.terasology.model.structures.BlockCollection;
 
 /**
  * Allows an entity to store items
@@ -50,9 +51,38 @@ public final class MinionComponent implements Component {
 	public Zone assignedzone;
 	//the recipe to craft when working
 	public MinionRecipe assignedrecipe;
+	//the blueprint for a building
+	private BlockCollection assignedBuildplan;
+	private boolean queued = false;
 
 	public MinionComponent() {
 		
 	}
-
+	
+	public void setBuildPlan(BlockCollection collection){
+		this.assignedBuildplan = collection;
+		queued = false;
+	}
+	
+	public void setQueued(){
+		queued = true;
+	}
+	
+	public boolean hasBuildPlan(){
+		return this.assignedBuildplan != null;
+	}
+	
+	public boolean isQueued(){
+		return queued;
+	}
+	
+	public void clearCommands(){
+		assignedzone = null;
+		assignedrecipe = null;
+		assignedBuildplan = null;
+	}
+	
+	public BlockCollection getBuildPlan(){
+		return assignedBuildplan;
+	}
 }

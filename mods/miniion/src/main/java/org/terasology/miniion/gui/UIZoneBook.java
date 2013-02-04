@@ -341,6 +341,7 @@ public class UIZoneBook extends UIWindow {
 			newzone.zonetype = MinionSystem.getNewZone().zonetype;
 		}
 		MinionSystem.addZone(newzone);
+		// trigger event to create building blueprint if residential
 		newzonefound = false;
 		lblzonetype.setText("");
 		MinionSystem.resetNewSelection();
@@ -478,7 +479,7 @@ public class UIZoneBook extends UIWindow {
 		listitem = new UIListItem(ZoneType.OreonFarm.toString(), ZoneType.OreonFarm);
 		listitem.setTextColor(Color.black);
 		cmbType.addItem(listitem);
-		listitem = new UIListItem(ZoneType.OreonFarm.toString(), ZoneType.Residential);
+		listitem = new UIListItem(ZoneType.Residential.toString(), ZoneType.Residential);
 		listitem.setTextColor(Color.black);
 		cmbType.addItem(listitem);
 	}

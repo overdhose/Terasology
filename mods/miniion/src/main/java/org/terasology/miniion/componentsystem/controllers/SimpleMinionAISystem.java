@@ -16,11 +16,20 @@
 package org.terasology.miniion.componentsystem.controllers;
 
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.vecmath.AxisAngle4f;
 import javax.vecmath.Vector3f;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.terasology.componentSystem.UpdateSubscriberSystem;
+import org.terasology.componentSystem.worldSimulation.GrowthSimulator;
 import org.terasology.components.InventoryComponent;
 import org.terasology.components.ItemComponent;
 import org.terasology.components.world.LocationComponent;
@@ -35,10 +44,13 @@ import org.terasology.game.Timer;
 import org.terasology.logic.LocalPlayer;
 import org.terasology.math.Vector3i;
 import org.terasology.miniion.components.*;
+import org.terasology.miniion.grammar.YummyGenerator;
 import org.terasology.miniion.pathfinder.AStarPathing;
 import org.terasology.miniion.minionenum.MinionMessagePriority;
 import org.terasology.miniion.minionenum.ZoneType;
 import org.terasology.miniion.utilities.*;
+import org.terasology.model.structures.BlockPosition;
+import org.terasology.model.structures.BlockSelection;
 import org.terasology.physics.character.CharacterMovementComponent;
 import org.terasology.rendering.assets.animation.MeshAnimation;
 import org.terasology.rendering.logic.SkeletalMeshComponent;
@@ -46,6 +58,8 @@ import org.terasology.world.*;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.BlockItemComponent;
 import org.terasology.world.block.management.BlockManager;
+
+import com.google.common.collect.Queues;
 
 /**
  * Created with IntelliJ IDEA. User: Overdhose Date: 7/05/12 Time: 18:25 first
@@ -55,12 +69,18 @@ import org.terasology.world.block.management.BlockManager;
 public class SimpleMinionAISystem implements EventHandlerSystem,
 		UpdateSubscriberSystem {
 
+	private static final Logger logger = LoggerFactory.getLogger(SimpleMinionAISystem.class);
+	private static final YummyGenerator buildgenerator = new YummyGenerator();
+	
 	private EntityManager entityManager;
 	private WorldProvider worldProvider;
 	private BlockEntityRegistry blockEntityRegistry;
 	private AStarPathing aStarPathing;
 	private Timer timer;
-
+	private ExecutorService executor;
+	private BlockingQueue<EntityRef> blockQueue;
+	private AtomicBoolean running = new AtomicBoolean();
+	
 	@Override
 	public void initialise() {
 		entityManager = CoreRegistry.get(EntityManager.class);
@@ -69,6 +89,29 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 		timer = CoreRegistry.get(Timer.class);
 		aStarPathing = new AStarPathing(worldProvider);
 		
+		running.set(true);
+		blockQueue = Queues.newLinkedBlockingQueue();
+		executor = Executors.newFixedThreadPool(1);
+		executor.execute(new Runnable() {
+	            @Override
+	            public void run() {
+	                Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+	                EntityRef minion;
+	                while (running.get()) {
+						try {
+							minion = blockQueue.take();
+							if(minion != null){
+								MinionComponent minioncomp = minion.getComponent(MinionComponent.class);
+				                Zone zone = minioncomp.assignedzone;
+				                Random rand = new Random();
+			                    minioncomp.setBuildPlan(buildgenerator.getYummyStructure(zone.zonewidth, 6, zone.zonedepth, rand.nextInt(10)));
+							}
+						} catch (InterruptedException e) {
+							logger.debug("Building thread interrupted");
+						}
+	                }
+	            }
+		 });
 	}
 	
 	 @ReceiveEvent(components = {SimpleMinionAIComponent.class})
@@ -90,6 +133,16 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 
 	@Override
 	public void shutdown() {
+		running.set(false);
+        executor.shutdown();
+        try {
+            executor.awaitTermination(1, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            logger.error("Interrupted awaiting shutdown", e);
+        }
+        if (blockQueue.isEmpty()) {
+            executor.shutdownNow();
+        }
 	}
 
 	@Override
@@ -292,7 +345,7 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 		}else if(minioncomp.assignedzone.zonetype != ZoneType.Work){
 			//redirect to farming steps
 			if(minioncomp.assignedzone.zonetype == ZoneType.OreonFarm){
-				if(minioncomp.assignedzone.isTerraformComplete()){
+				if(minioncomp.assignedzone.isActionComplete()){
 					//check if farm has unplanted spots
 					if(minioncomp.assignedzone.checkFarm(false)){
 						executeFarmmAI(entity);
@@ -308,6 +361,15 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 			}
 			else if(minioncomp.assignedzone.zonetype == ZoneType.Residential){
 				//redirect to building.
+				if(minioncomp.assignedzone != null && !minioncomp.hasBuildPlan()){
+					changeAnimation(entity, animcomp.idleAnim, true);
+                	if(!minioncomp.isQueued() && !minioncomp.assignedzone.isActionComplete()){
+                		minioncomp.setQueued();
+                		blockQueue.offer(entity);                		
+                	}
+				}else if(minioncomp.hasBuildPlan()){
+					executeBuildAI(entity);
+				}
 			}
 			else{
 				changeAnimation(entity, animcomp.idleAnim, true);
@@ -485,7 +547,7 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 						}
 					}
 					if(ai.movementTargets.size() == 0 && !fixedrecipeuri.isEmpty()){
-						minioncomp.assignedzone.setTerraformComplete();
+						minioncomp.assignedzone.setActionComplete();
 					}
 				}
 				
@@ -599,6 +661,42 @@ public class SimpleMinionAISystem implements EventHandlerSystem,
 
 		entity.saveComponent(ai);
 		setMovement(currentTarget, entity);
+	}
+	
+	/**
+	 * create buildings based on grammar
+	 * @param entity 
+	 * 				the minion that is building
+	 */
+	private void executeBuildAI(EntityRef entity) {
+		MinionComponent minioncomp = entity.getComponent(MinionComponent.class);
+		LocationComponent location = entity
+				.getComponent(LocationComponent.class);
+		SimpleMinionAIComponent ai = entity
+				.getComponent(SimpleMinionAIComponent.class);
+		AnimationComponent animcomp = entity
+				.getComponent(AnimationComponent.class);
+		Vector3f worldPos = new Vector3f(location.getWorldPosition());
+		
+		if(!minioncomp.assignedzone.isActionComplete()){
+			if (timer.getTimeInMs() - ai.lastAttacktime > 200) {
+				changeAnimation(entity, animcomp.workAnim, true);
+				ai.lastAttacktime = timer.getTimeInMs();
+				for(BlockPosition position : minioncomp.getBuildPlan().getBlocks().keySet()){	
+					int x = minioncomp.assignedzone.getStartPosition().x +  position.x;
+		            int y = minioncomp.assignedzone.getStartPosition().y +  position.y +1;
+		            int z = minioncomp.assignedzone.getStartPosition().z +  position.z;
+					worldProvider.setBlock(x, y, z, minioncomp.getBuildPlan().getBlock(position), worldProvider.getBlock(x, y, z));
+					minioncomp.getBuildPlan().getBlocks().remove(position);
+					if(minioncomp.getBuildPlan().getBlocks().isEmpty()){
+						minioncomp.setBuildPlan(null);
+						minioncomp.assignedzone.setActionComplete();
+					}
+					break;
+				}
+			}
+		}
+		
 	}
 
 	private void executeMoveAI(EntityRef entity) {

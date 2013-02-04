@@ -14,20 +14,14 @@ import org.terasology.grammarSystem.logic.grammar.ProductionSystem;
 import org.terasology.grammarSystem.logic.grammar.assets.Grammar;
 import org.terasology.grammarSystem.logic.grammar.shapes.Shape;
 import org.terasology.grammarSystem.logic.grammar.shapes.ShapeSymbol;
-import org.terasology.grammarSystem.logic.grammar.shapes.complex.DivideArg;
-import org.terasology.grammarSystem.logic.grammar.shapes.complex.DivideRule;
-import org.terasology.grammarSystem.logic.grammar.shapes.complex.SetRule;
-import org.terasology.grammarSystem.logic.grammar.shapes.complex.Size;
-import org.terasology.grammarSystem.logic.grammar.shapes.complex.SplitArg;
-import org.terasology.grammarSystem.logic.grammar.shapes.complex.SplitRule;
+import org.terasology.grammarSystem.logic.grammar.shapes.complex.*;
 import org.terasology.grammarSystem.world.building.BuildingGenerator;
-import org.terasology.logic.commands.Command;
-import org.terasology.logic.commands.CommandParam;
-import org.terasology.logic.commands.CommandProvider;
-import org.terasology.logic.commands.Commands;
+import org.terasology.logic.commands.*;
 import org.terasology.logic.manager.MessageManager;
+import org.terasology.math.Vector3i;
 import org.terasology.model.structures.BlockCollection;
 import org.terasology.model.structures.BlockPosition;
+import org.terasology.model.structures.BlockSelection;
 import org.terasology.rendering.cameras.Camera;
 import org.terasology.rendering.world.WorldRenderer;
 import org.terasology.world.WorldProvider;
@@ -63,6 +57,12 @@ public class YummyGenerator implements CommandProvider{
 		}
 	}
 	
+	public BlockSelection getYummyCollection(int width, int height, int depth, int index, Vector3i attachpos){
+		BlockCollection collection = getYummyStructure(width, height, depth, index);
+		collection.setAttachPos(new BlockPosition(0, 0, 0));
+		return collection.getLocalizedSelection(new BlockPosition(attachpos.x, attachpos.y, attachpos.z));
+	}  
+	  
 	public BlockCollection getYummyStructure(int width, int height, int depth, int index){
 		        
         BuildingGenerator generator = complexBuildingGenerator(index);

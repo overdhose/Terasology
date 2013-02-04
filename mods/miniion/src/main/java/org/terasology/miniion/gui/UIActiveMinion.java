@@ -458,8 +458,7 @@ public class UIActiveMinion extends UIWindow{
 					SimpleMinionAIComponent aicomp = MinionSystem.getActiveMinion().getComponent(SimpleMinionAIComponent.class);
 					aicomp.ClearCommands();
 					MinionSystem.getActiveMinion().saveComponent(aicomp);
-					minioncomp.assignedzone = null;
-					minioncomp.assignedrecipe = null;
+					minioncomp.clearCommands();
 					MinionSystem.getActiveMinion().saveComponent(minioncomp);
 					refreshScreen();
 				}else
@@ -603,6 +602,7 @@ public class UIActiveMinion extends UIWindow{
 				}else
 				{
 					lblzone.setText("workzone : " + minioncomp.assignedzone.Name);
+					if(minioncomp.hasBuildPlan()) lblzone.appendText(" and has plan");
 				}
 				if(minioncomp.assignedrecipe == null){
 					lblrecipe.setText("");
