@@ -43,17 +43,19 @@ import org.terasology.rendering.gui.widgets.*;
 
 public class UIActiveMinion extends UIWindow{
 	
-	private final UILabel lblname, lblflavor, lblzone, lblrecipe, lblMessage;
+	private final UILabel lblname, lblflavor, lblzone, lblrecipe, lblMessage, lblHover;
 	private final UIImage backgroundmain;
 	private final UIComposite behaviourlist, actionlist;
 	private final UIList uiMainlist, uiDetailList;
 	private final UIScreenStats uistats;
 	private final UIScreenSettings uisettings;
-	private final UIModButtonArrow btnLeft, btnRight, btnBehaviour, btnActions, btnStats;
+	private final UIModButtonArrow btnLeft, btnRight, btnBehaviour, btnActions;
 	//behaviour buttons
 	private final UIModButtonMenu btnStay, btnFollow, btnAttack, btnGather, btnWork, btnTerra;
 	//action buttons
-	private final UIModButtonMenu btnInventory, btnZone, btnRecipe, btnClear, btnBye, btnMinionlist, btnSettings;
+	private final UIModButtonMenu btnInventory, btnZone, btnRecipe, btnClear, btnBye, btnStats;
+	//special buttons
+	private final UIModButtonSpecial btnMinionlist, btnSettings, btnZoneMan, btnMessage, btnCraftMan, btnBuildMan, btnEmpty;
 	
 	public UIActiveMinion() {
 		setId("activeminiion");
@@ -91,49 +93,55 @@ public class UIActiveMinion extends UIWindow{
 		backgroundmain = new UIImage();
 		backgroundmain.setTexture(Assets.getTexture("miniion:activeminionback"));
 		backgroundmain.setPosition(new Vector2f(0, 0));
-		backgroundmain.setSize(new Vector2f(300, 200));
+		backgroundmain.setSize(new Vector2f(300, 132));
 		backgroundmain.setVisible(true);
 		addDisplayElement(backgroundmain);
 		
+		lblHover = new UILabel();
+		lblHover.setPosition(new Vector2f(15, 33));
+		lblHover.setSize(new Vector2f(260,15));		
+		lblHover.setVisible(true);
+		backgroundmain.addDisplayElement(lblHover);
+		
 		lblname = new UILabel();
-		lblname.setPosition(new Vector2f(30, 45));
+		lblname.setPosition(new Vector2f(45, 90));
 		lblname.setSize(new Vector2f(260,15));		
 		lblname.setVisible(true);
 		backgroundmain.addDisplayElement(lblname);
 		
 		lblflavor = new UILabel();
-		lblflavor.setPosition(new Vector2f(45, 5));
+		lblflavor.setPosition(new Vector2f(45, 55));
 		lblflavor.setWrap(true);
 		lblflavor.setSize(new Vector2f(250, 30));
 		lblflavor.setVisible(true);
 		backgroundmain.addDisplayElement(lblflavor);
 		
 		lblMessage = new UILabel();
-		lblMessage.setPosition(new Vector2f(30, 100));
+		lblMessage.setPosition(new Vector2f(-100, 10));
 		lblMessage.setWrap(true);
 		lblMessage.setSize(new Vector2f(250, 60));
 		lblMessage.setVisible(true);
 		backgroundmain.addDisplayElement(lblMessage);
 		
 		lblzone = new UILabel();
-		lblzone.setPosition(new Vector2f(10, 65));
+		lblzone.setPosition(new Vector2f(-100, 25));
 		lblzone.setVisible(true);
 		backgroundmain.addDisplayElement(lblzone);	
 		
 		lblrecipe = new UILabel();
-		lblrecipe.setPosition(new Vector2f(10, 80));
+		lblrecipe.setPosition(new Vector2f(-100, 40));
 		lblrecipe.setVisible(true);
 		backgroundmain.addDisplayElement(lblrecipe);	
 		
-		btnLeft = new UIModButtonArrow(new Vector2f(12,23), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.LEFT);
-		btnLeft.setPosition(new Vector2f(8,41));
+		btnLeft = new UIModButtonArrow(new Vector2f(12,23), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.LEFT, new Vector2f(10, -54), "previous miniion");
+		btnLeft.setPosition(new Vector2f(5,87));
 		btnLeft.setId("previousminion");
 		btnLeft.addClickListener(executeArrowButton);
 		btnLeft.setVisible(true);
 		backgroundmain.addDisplayElement(btnLeft);
 		
-		btnRight = new UIModButtonArrow(new Vector2f(12,23), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.RIGHT);
-		btnRight.setPosition(new Vector2f(260,41));
+		btnRight = new UIModButtonArrow(new Vector2f(12,23), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.RIGHT, new Vector2f(-6, -54), "next miniion");
+		btnRight.setPosition(new Vector2f(21,87));
 		btnRight.setId("nextminion");
 		btnRight.addClickListener(executeArrowButton);
 		btnRight.setVisible(true);
@@ -143,14 +151,14 @@ public class UIActiveMinion extends UIWindow{
         layout.setCellPadding(new Vector4f(0f, 0f, 0f, 0f));
 		behaviourlist = new UIComposite();
 		behaviourlist.setSize(new Vector2f(100,120));
-		behaviourlist.setPosition(new Vector2f(200,200));
+		behaviourlist.setPosition(new Vector2f(200,132));
 		behaviourlist.setBackgroundImage("miniion:modularback");
 		behaviourlist.setLayout(layout);
 		behaviourlist.setVisible(false);
 		backgroundmain.addDisplayElement(behaviourlist);
 		
-		btnBehaviour  = new UIModButtonArrow(new Vector2f(46,12), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.DOWN, "set behaviour");
-		btnBehaviour.setPosition(new Vector2f(237,186));
+		btnBehaviour  = new UIModButtonArrow(new Vector2f(46,12), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.DOWN, new Vector2f(-222, -83) ,"set behaviour");
+		btnBehaviour.setPosition(new Vector2f(237,116));
 		btnBehaviour.setVisible(true);
 		btnBehaviour.setId("showbehaviour");
 		btnBehaviour.addClickListener(executeArrowButton);		
@@ -198,8 +206,8 @@ public class UIActiveMinion extends UIWindow{
 		btnTerra.setVisible(true);
 		behaviourlist.addDisplayElement(btnTerra);
 		
-		btnActions  = new UIModButtonArrow(new Vector2f(46,12), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.DOWN, "select action");
-		btnActions.setPosition(new Vector2f(137,186));
+		btnActions  = new UIModButtonArrow(new Vector2f(46,12), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.DOWN, new Vector2f(-122, -83) ,"select action");
+		btnActions.setPosition(new Vector2f(137,116));
 		btnActions.setVisible(true);
 		btnActions.setId("showactions");
 		btnActions.addClickListener(executeArrowButton);		
@@ -207,7 +215,7 @@ public class UIActiveMinion extends UIWindow{
 		
 		actionlist = new UIComposite();
 		actionlist.setSize(new Vector2f(100,120));
-		actionlist.setPosition(new Vector2f(100,200));
+		actionlist.setPosition(new Vector2f(100,132));
 		actionlist.setBackgroundImage("miniion:modularback");
 		actionlist.setLayout(layout);
 		actionlist.setVisible(false);
@@ -234,12 +242,64 @@ public class UIActiveMinion extends UIWindow{
 		btnRecipe.setVisible(true);
 		actionlist.addDisplayElement(btnRecipe);
 		
-		btnMinionlist = new UIModButtonMenu(new Vector2f(100,20), org.terasology.miniion.gui.UIModButtonMenu.ButtonType.NORMAL);
-		btnMinionlist.setLabel("minionlist");
-		btnMinionlist.setId("list");
+		btnMinionlist = new UIModButtonSpecial(new Vector2f(40,30), org.terasology.miniion.gui.UIModButtonSpecial.ButtonType.Minions, new Vector2f(8, 32), "Miniions management");
+		btnMinionlist.setPosition(new Vector2f(7,1));
+		btnMinionlist.setId("minman");
 		btnMinionlist.addClickListener(actionListener);
 		btnMinionlist.setVisible(true);
-		actionlist.addDisplayElement(btnMinionlist);
+		backgroundmain.addDisplayElement(btnMinionlist);
+		
+		btnZoneMan = new UIModButtonSpecial(new Vector2f(40,30), org.terasology.miniion.gui.UIModButtonSpecial.ButtonType.Zones, new Vector2f(-33, 32), "Zone management");
+		btnZoneMan.setPosition(new Vector2f(48,1));
+		btnZoneMan.setId("zonmman");
+		btnZoneMan.addClickListener(actionListener);
+		btnZoneMan.setVisible(true);
+		backgroundmain.addDisplayElement(btnZoneMan);
+		
+		btnMessage = new UIModButtonSpecial(new Vector2f(40,30), org.terasology.miniion.gui.UIModButtonSpecial.ButtonType.Messages, new Vector2f(-74, 32), "Message management");
+		btnMessage.setPosition(new Vector2f(89,1));
+		btnMessage.setId("mesman");
+		btnMessage.addClickListener(actionListener);
+		btnMessage.setVisible(true);
+		backgroundmain.addDisplayElement(btnMessage);
+		
+		btnCraftMan = new UIModButtonSpecial(new Vector2f(40,30), org.terasology.miniion.gui.UIModButtonSpecial.ButtonType.Crafting, new Vector2f(-115, 32), "Crafting management");
+		btnCraftMan.setPosition(new Vector2f(130,1));
+		btnCraftMan.setId("craman");
+		btnCraftMan.addClickListener(actionListener);
+		btnCraftMan.setVisible(true);
+		btnCraftMan.setEnabled(false);
+		backgroundmain.addDisplayElement(btnCraftMan);
+		
+		btnBuildMan = new UIModButtonSpecial(new Vector2f(40,30), org.terasology.miniion.gui.UIModButtonSpecial.ButtonType.Building, new Vector2f(-156, 32), "Building management");
+		btnBuildMan.setPosition(new Vector2f(171,1));
+		btnBuildMan.setId("buiman");
+		btnBuildMan.addClickListener(actionListener);
+		btnBuildMan.setVisible(true);
+		btnBuildMan.setEnabled(false);
+		backgroundmain.addDisplayElement(btnBuildMan);
+		
+		btnEmpty = new UIModButtonSpecial(new Vector2f(40,30), org.terasology.miniion.gui.UIModButtonSpecial.ButtonType.MiniMap, new Vector2f(-197, 32), "empty");
+		btnEmpty.setPosition(new Vector2f(212,1));
+		btnEmpty.setId("mapman");
+		btnEmpty.addClickListener(actionListener);
+		btnEmpty.setVisible(true);
+		btnEmpty.setEnabled(false);
+		backgroundmain.addDisplayElement(btnEmpty);
+		
+		btnSettings = new UIModButtonSpecial(new Vector2f(40,30), org.terasology.miniion.gui.UIModButtonSpecial.ButtonType.Settings, new Vector2f(-237, 32), "Miniions settings");
+		btnSettings.setPosition(new Vector2f(253,1));
+		btnSettings.setId("setman");
+		btnSettings.addClickListener(actionListener);
+		btnSettings.setVisible(true);
+		backgroundmain.addDisplayElement(btnSettings);
+		
+		btnStats = new UIModButtonMenu(new Vector2f(100,20), org.terasology.miniion.gui.UIModButtonMenu.ButtonType.NORMAL);
+		btnStats.setLabel("statistics");
+		btnStats.setId("showstats");
+		btnStats.addClickListener(actionListener);
+		btnStats.setVisible(true);
+		actionlist.addDisplayElement(btnStats);
 		
 		btnClear = new UIModButtonMenu(new Vector2f(100,20), org.terasology.miniion.gui.UIModButtonMenu.ButtonType.NORMAL);
 		btnClear.setLabel("clear orders");
@@ -253,36 +313,21 @@ public class UIActiveMinion extends UIWindow{
 		btnBye.setId("byeb");
 		btnBye.addClickListener(actionListener);
 		btnBye.setVisible(true);
-		actionlist.addDisplayElement(btnBye);
-		
-		btnSettings  = new UIModButtonMenu(new Vector2f(100,20), org.terasology.miniion.gui.UIModButtonMenu.ButtonType.NORMAL);
-		btnSettings.setPosition(new Vector2f(200,130));
-		btnSettings.setLabel("minion settings");
-		btnSettings.setId("sett");
-		btnSettings.addClickListener(actionListener);
-		btnSettings.setVisible(true);
-		backgroundmain.addDisplayElement(btnSettings);
+		actionlist.addDisplayElement(btnBye);				
 		
 		uiMainlist = new UIList();
 		uiMainlist.setSize(new Vector2f(100, 300));
-		uiMainlist.setPosition(new Vector2f(0, 200));
+		uiMainlist.setPosition(new Vector2f(0, 132));
 		uiMainlist.setBackgroundImage("miniion:modularback");
 		uiMainlist.setVisible(false);
 		this.addDisplayElement(uiMainlist);
 		
 		uiDetailList = new UIList();
 		uiDetailList.setSize(new Vector2f(100, 300));
-		uiDetailList.setPosition(new Vector2f(0, 200));
+		uiDetailList.setPosition(new Vector2f(0, 132));
 		uiDetailList.setBackgroundImage("miniion:modularback");
 		uiDetailList.setVisible(false);
-		this.addDisplayElement(uiDetailList);
-		
-		btnStats = new UIModButtonArrow(new Vector2f(12,46), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.LEFT);
-		btnStats.setPosition(new Vector2f(8,135));
-		btnStats.setId("showstats");
-		btnStats.addClickListener(executeArrowButton);
-		btnStats.setVisible(true);
-		backgroundmain.addDisplayElement(btnStats);				
+		this.addDisplayElement(uiDetailList);							
 		
 		uistats = new UIScreenStats();
 		uistats.setSize(new Vector2f(300,600));
@@ -325,14 +370,6 @@ public class UIActiveMinion extends UIWindow{
 			if(arrow.getId() == "showactions"){
 				if(MinionSystem.getActiveMinion() != null){
 					actionlist.setVisible(!actionlist.isVisible());
-				}
-			}else
-			if(arrow.getId() == "showstats"){
-				if(MinionSystem.getActiveMinion() != null){
-					if(uisettings.isVisible()){
-						uisettings.setVisible(false);
-					}
-					uistats.setVisible(!uistats.isVisible());
 				}
 			}else
 			if(arrow.getId() == "previousminion"){
@@ -396,50 +433,82 @@ public class UIActiveMinion extends UIWindow{
 		
 		@Override
 		public void click(UIDisplayElement element, int button) {
-			UIModButtonMenu clickedbutton = (UIModButtonMenu) element;
-			if (clickedbutton.getId() == "sett") {
-				if(uistats.isVisible()){
-					uistats.setVisible(false);
-				}
-				uisettings.setVisible(!uisettings.isVisible());
-			}			
-			if(MinionSystem.getActiveMinion() != null){
-				MinionComponent minioncomp = MinionSystem.getActiveMinion().getComponent(MinionComponent.class);
-				if (clickedbutton.getId() == "inve") {
-					MinionSystem.getActiveMinion().send(new ActivateEvent(MinionSystem.getActiveMinion(), CoreRegistry.get(LocalPlayer.class).getEntity()));
-				}else
-				if (clickedbutton.getId() == "zone") {
-					if(uiDetailList.isVisible()){
-						uiDetailList.setVisible(false);
-					}
-					if(uiMainlist.isVisible()){
-						uiMainlist.setVisible(false);
-					}
-					else{
+			if(element.getClass().equals(UIModButtonMenu.class)){
+				UIModButtonMenu clickedbutton = (UIModButtonMenu) element;
+				if(MinionSystem.getActiveMinion() != null){
+					MinionComponent minioncomp = MinionSystem.getActiveMinion().getComponent(MinionComponent.class);
+					if (clickedbutton.getId() == "inve") {
+						MinionSystem.getActiveMinion().send(new ActivateEvent(MinionSystem.getActiveMinion(), CoreRegistry.get(LocalPlayer.class).getEntity()));
+					}else
+					if (clickedbutton.getId() == "zone") {
+						if(uiDetailList.isVisible()){
+							uiDetailList.setVisible(false);
+						}
+						if(uiMainlist.isVisible()){
+							uiMainlist.setVisible(false);
+						}
+						else{
+							uiMainlist.removeAll();
+							for (ZoneType zonetype : ZoneType.values()) {
+								UIListItem listitem = new UIListItem(zonetype.toString(), zonetype);
+								listitem.addClickListener(zoneItemListener);
+								uiMainlist.addItem(listitem);
+							}
+							uiMainlist.setVisible(true);
+						}
+					}else
+					if (clickedbutton.getId() == "reci") {
 						uiMainlist.removeAll();
-						for (ZoneType zonetype : ZoneType.values()) {
-							UIListItem listitem = new UIListItem(zonetype.toString(), zonetype);
-							listitem.addClickListener(zoneItemListener);
-							uiMainlist.addItem(listitem);
+						if(uiMainlist.isVisible()){
+							uiMainlist.setVisible(false);
 						}
-						uiMainlist.setVisible(true);
-					}
-				}else
-				if (clickedbutton.getId() == "reci") {
-					uiMainlist.removeAll();
-					if(uiMainlist.isVisible()){
-						uiMainlist.setVisible(false);
-					}
-					else{
-						for (MinionRecipe recipe : MinionSystem.getRecipesList()) {
-							UIListItem listitem = new UIListItem(recipe.Name, recipe);
-							listitem.addClickListener(recipeItemListener);
-							uiMainlist.addItem(listitem);
+						else{
+							for (MinionRecipe recipe : MinionSystem.getRecipesList()) {
+								UIListItem listitem = new UIListItem(recipe.Name, recipe);
+								listitem.addClickListener(recipeItemListener);
+								uiMainlist.addItem(listitem);
+							}
+							uiMainlist.setVisible(true);
 						}
-						uiMainlist.setVisible(true);
+					}else
+					if(clickedbutton.getId() == "showstats"){
+						if(MinionSystem.getActiveMinion() != null){
+							if(uisettings.isVisible()){
+								uisettings.setVisible(false);
+							}
+							uistats.setVisible(!uistats.isVisible());
+						}
+					}else	
+					if (clickedbutton.getId() == "clea") {
+						SimpleMinionAIComponent aicomp = MinionSystem.getActiveMinion().getComponent(SimpleMinionAIComponent.class);
+						aicomp.ClearCommands();
+						MinionSystem.getActiveMinion().saveComponent(aicomp);
+						minioncomp.clearCommands();
+						MinionSystem.getActiveMinion().saveComponent(minioncomp);
+						refreshScreen();
+					}else
+					if (clickedbutton.getId() == "byeb") {
+						//WARNING!!!! execute getprevious before setting the component to dying, 
+						//else getprevious will have trouble determining what minion needs to become active!
+						EntityRef dyingminion = MinionSystem.getActiveMinion();
+						MinionSystem.getPreviousMinion(true);
+						minioncomp.minionBehaviour = MinionBehaviour.Die;
+						minioncomp.dying = true;
+						dyingminion.saveComponent(minioncomp);
+						closeAllFoldouts();
+						refreshScreen();
+					}					
+				}
+			}
+			else if(element.getClass().equals(UIModButtonSpecial.class)){
+				UIModButtonSpecial clickedbutton = (UIModButtonSpecial) element;
+				if (clickedbutton.getId() == "setman") {
+					if(uistats.isVisible()){
+						uistats.setVisible(false);
 					}
+					uisettings.setVisible(!uisettings.isVisible());
 				}else
-				if (clickedbutton.getId() == "list") {
+				if (clickedbutton.getId() == "minman") {
 					uiMainlist.removeAll();
 					if(uiMainlist.isVisible()){
 						uiMainlist.setVisible(false);
@@ -453,26 +522,7 @@ public class UIActiveMinion extends UIWindow{
 						}
 						uiMainlist.setVisible(true);
 					}
-				}else	
-				if (clickedbutton.getId() == "clea") {
-					SimpleMinionAIComponent aicomp = MinionSystem.getActiveMinion().getComponent(SimpleMinionAIComponent.class);
-					aicomp.ClearCommands();
-					MinionSystem.getActiveMinion().saveComponent(aicomp);
-					minioncomp.clearCommands();
-					MinionSystem.getActiveMinion().saveComponent(minioncomp);
-					refreshScreen();
-				}else
-				if (clickedbutton.getId() == "byeb") {
-					//WARNING!!!! execute getprevious before setting the component to dying, 
-					//else getprevious will have trouble determining what minion needs to become active!
-					EntityRef dyingminion = MinionSystem.getActiveMinion();
-					MinionSystem.getPreviousMinion(true);
-					minioncomp.minionBehaviour = MinionBehaviour.Die;
-					minioncomp.dying = true;
-					dyingminion.saveComponent(minioncomp);
-					closeAllFoldouts();
-					refreshScreen();
-				}					
+				}			
 			}
 		}
 	};
@@ -581,7 +631,7 @@ public class UIActiveMinion extends UIWindow{
 			// remove and add border for resize
 			// would be nice if I could lock the size to default size
 			lblname.removeBorderSolid();		
-			lblname.setText("No Oeon is obeying you!");
+			lblname.setText("No miniion is obeying you!");
 			lblname.setBorderSolid(new Vector4f(2f, 2f, 2f, 2f), Color.magenta);
 			lblflavor.setText("Get your Oreominions now!!! 75% off if you bought any other DLC");
 			lblzone.setText("");

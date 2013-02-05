@@ -64,7 +64,7 @@ public class UIModButtonArrow extends UIDisplayContainer {
 		setSize(size);
 
 		// default arrow buttons
-		setTexture("miniion:Arrows2");
+		setTexture("miniion:Arrows");
 		switch(buttontype){
 			case LEFT :{
 				setNormalState(new Vector2f(0.0f, 0.0f), new Vector2f(12f, 23f));
@@ -159,10 +159,10 @@ public class UIModButtonArrow extends UIDisplayContainer {
 
 	}
 	
-	public UIModButtonArrow(Vector2f size, ButtonType buttontype, String Hovertext) {
+	public UIModButtonArrow(Vector2f size, ButtonType buttontype, Vector2f hoverposition, String Hovertext) {
 		this(size,buttontype);
 		hoverlabel = new UILabel(Hovertext);
-		hoverlabel.setPosition(new Vector2f((this.getPosition().x - Hovertext.length() * 2), (this.getPosition().y - 18)));
+		hoverlabel.setPosition(hoverposition);
 		hoverlabel.setVisible(false);
 		addDisplayElement(hoverlabel);
 	}
