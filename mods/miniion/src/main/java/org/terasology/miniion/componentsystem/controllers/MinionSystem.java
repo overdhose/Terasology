@@ -52,15 +52,11 @@ public class MinionSystem implements EventHandlerSystem {
 	private EntityManager entityManager;
 
 	//private static final int PRIORITY_LOCAL_PLAYER_OVERRIDE = 160;
-	private static boolean showactiveminion = false;
-	private static boolean showSelectionOverlay = false;
 	private static EntityRef activeminion;
 	// TODO : a better way to save / load zones, but it does the trick
-	private static EntityRef zonelist;
+	private static EntityRef zonelist, settingslist;
 	private static Zone newzone;
-	
-	
-	
+		
 	private static List<MinionRecipe> recipeslist = new ArrayList<MinionRecipe>();
 
 	private GUIManager guiManager;
@@ -70,6 +66,7 @@ public class MinionSystem implements EventHandlerSystem {
 	@Override
 	public void initialise() {
 		ModIcons.loadIcons();
+		createSettings();
 		guiManager = CoreRegistry.get(GUIManager.class);
 		blockItemFactory = new BlockItemFactory(entityManager);
 		// experimental popup menu for the minion command tool
@@ -77,7 +74,7 @@ public class MinionSystem implements EventHandlerSystem {
 		// ui to create summonable cards
 		guiManager.registerWindow("cardbook", UICardBook.class); 
 		// ui to manage summoned minions, selecting one sets it active!
-		guiManager.registerWindow("oreobook", UIScreenBookOreo.class);
+		//guiManager.registerWindow("oreobook", UIScreenBookOreo.class);
 		// ui to manage zones
 		guiManager.registerWindow("zonebook", UIZoneBook.class); 
 		createZoneList();
@@ -99,8 +96,7 @@ public class MinionSystem implements EventHandlerSystem {
 	public static String getName() {
 		PrefabManager prefMan = CoreRegistry.get(PrefabManager.class);
 		Prefab prefab = prefMan.getPrefab("miniion:nameslist");
-		EntityRef namelist = CoreRegistry.get(EntityManager.class).create(
-				prefab);
+		EntityRef namelist = CoreRegistry.get(EntityManager.class).create(prefab);
 		namelist.hasComponent(namesComponent.class);
 		namesComponent namecomp = namelist.getComponent(namesComponent.class);
 		Random rand = new Random();
@@ -322,33 +318,20 @@ public class MinionSystem implements EventHandlerSystem {
 	}
 	
 	/**
-	 * Returns true if the user set option in minion settings
+	 * creates a settings component
+	 * used to save settings (persist)
 	 */
-	public static boolean isActiveMinionShown(){
-		return showactiveminion;
+	private static void createSettings() {
+		settingslist = CoreRegistry.get(EntityManager.class).create();
+		MiniionSettingsComponent settingcomp = new MiniionSettingsComponent();
+		settingslist.addComponent(settingcomp);
+		settingslist.setPersisted(true);
+		settingslist.saveComponent(settingcomp);
 	}
 	
-	public static void toggleActiveMinionShown(){
-		showactiveminion = !showactiveminion;
-	}
-	
-	/**
-	 * Returns true if the user set option in minion settings
-	 */
-	public static boolean isSelectionShown(){
-		return showSelectionOverlay;
-	}
-	
-	public static void toggleSelectionShown(){
-		showSelectionOverlay = !showSelectionOverlay;
-	}
-	
-	/**
-	 * hide / show the active minion
-	 */
-	public void showActiveMinion(boolean show){
-		showactiveminion = show;
-	}
+	public static EntityRef getSettings(){
+		return settingslist;
+	}	
 	
 	/**
 	 * order the minions by id and return the next one, or the first if none were active!
@@ -506,6 +489,8 @@ public class MinionSystem implements EventHandlerSystem {
 				skelcomp.material = Assets.getMaterial("OreoMinions:OreonSkin");
 			}
 		}
+		MiniionSettingsComponent settingcomp = settingslist.getComponent(MiniionSettingsComponent.class);
+		settingslist.saveComponent(settingcomp);
 	}
 
 	/**

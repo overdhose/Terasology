@@ -22,6 +22,7 @@ import javax.vecmath.Vector2f;
 import javax.vecmath.Vector4f;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.Display;
 import org.newdawn.slick.Color;
 import org.terasology.asset.Assets;
 import org.terasology.entitySystem.EntityManager;
@@ -29,6 +30,7 @@ import org.terasology.entitySystem.EntityRef;
 import org.terasology.events.ActivateEvent;
 import org.terasology.game.CoreRegistry;
 import org.terasology.logic.LocalPlayer;
+import org.terasology.miniion.components.MiniionSettingsComponent;
 import org.terasology.miniion.components.MinionComponent;
 import org.terasology.miniion.components.SimpleMinionAIComponent;
 import org.terasology.miniion.componentsystem.controllers.MinionSystem;
@@ -43,8 +45,10 @@ import org.terasology.rendering.gui.widgets.*;
 
 public class UIActiveMinion extends UIWindow{
 	
+	private final static int extrainfoheight = 60;
+	
 	private final UILabel lblname, lblflavor, lblzone, lblrecipe, lblMessage, lblHover;
-	private final UIImage backgroundmain;
+	private final UIImage backgroundmain, backgroundextra;
 	private final UIComposite behaviourlist, actionlist;
 	private final UIList uiMainlist, uiDetailList;
 	private final UIScreenStats uistats;
@@ -85,17 +89,24 @@ public class UIActiveMinion extends UIWindow{
 			}
 		});
 		
-		setSize(new Vector2f(300,300));
+		setSize(new Vector2f(new Vector2f(Display.getWidth(), Display.getHeight())));
 		setVerticalAlign(EVerticalAlign.TOP);
-		setHorizontalAlign(EHorizontalAlign.RIGHT);
+		setHorizontalAlign(EHorizontalAlign.LEFT);
 		setVisible(true);
 		
 		backgroundmain = new UIImage();
 		backgroundmain.setTexture(Assets.getTexture("miniion:activeminionback"));
-		backgroundmain.setPosition(new Vector2f(0, 0));
 		backgroundmain.setSize(new Vector2f(300, 132));
+		backgroundmain.setPosition(new Vector2f(this.getSize().x - 300, 0));
 		backgroundmain.setVisible(true);
 		addDisplayElement(backgroundmain);
+		
+		backgroundextra = new UIImage();
+		backgroundextra.setTexture(Assets.getTexture("miniion:modularback"));
+		backgroundextra.setSize(new Vector2f(300, extrainfoheight));
+		backgroundextra.setPosition(new Vector2f(this.getSize().x - 600, 0));
+		backgroundextra.setVisible(false);
+		addDisplayElement(backgroundextra);
 		
 		lblHover = new UILabel();
 		lblHover.setPosition(new Vector2f(15, 33));
@@ -124,14 +135,14 @@ public class UIActiveMinion extends UIWindow{
 		backgroundmain.addDisplayElement(lblMessage);
 		
 		lblzone = new UILabel();
-		lblzone.setPosition(new Vector2f(-100, 25));
+		lblzone.setPosition(new Vector2f(5, 0));
 		lblzone.setVisible(true);
-		backgroundmain.addDisplayElement(lblzone);	
+		backgroundextra.addDisplayElement(lblzone);	
 		
 		lblrecipe = new UILabel();
-		lblrecipe.setPosition(new Vector2f(-100, 40));
+		lblrecipe.setPosition(new Vector2f(5, 15));
 		lblrecipe.setVisible(true);
-		backgroundmain.addDisplayElement(lblrecipe);	
+		backgroundextra.addDisplayElement(lblrecipe);	
 		
 		btnLeft = new UIModButtonArrow(new Vector2f(12,23), org.terasology.miniion.gui.UIModButtonArrow.ButtonType.LEFT, new Vector2f(10, -54), "previous miniion");
 		btnLeft.setPosition(new Vector2f(5,87));
@@ -332,7 +343,7 @@ public class UIActiveMinion extends UIWindow{
 		uistats = new UIScreenStats();
 		uistats.setSize(new Vector2f(300,600));
 		//edit this to minus the width of the window if you wonna change the size
-		uistats.setPosition(new Vector2f(-300,0));
+		uistats.setPosition(new Vector2f(-300,extrainfoheight));
 		//we'll make a new background for the stats, but for now this will do
 		uistats.setBackgroundImage("miniion:modularback");
 		uistats.setVisible(false);
@@ -340,10 +351,12 @@ public class UIActiveMinion extends UIWindow{
 		
 		uisettings = new UIScreenSettings();
 		uisettings.setSize(new Vector2f(300,600));
-		uisettings.setPosition(new Vector2f(-300,0));
+		uisettings.setPosition(new Vector2f(-300,extrainfoheight));
 		uisettings.setBackgroundImage("miniion:modularback");
 		uisettings.setVisible(false);
 		backgroundmain.addDisplayElement(uisettings);
+		
+		
 		
 	}
 	
@@ -628,8 +641,12 @@ public class UIActiveMinion extends UIWindow{
 	
 	private void refreshScreen(){
 		if(MinionSystem.getActiveMinion() == null){
+			if(MinionSystem.getSettings() != null){
+				MiniionSettingsComponent settingcomp = MinionSystem.getSettings().getComponent(MiniionSettingsComponent.class);
+				backgroundextra.setVisible(settingcomp.showExtraInfo);
+			}
 			// remove and add border for resize
-			// would be nice if I could lock the size to default size
+			// would be nice if I could lock the size to default size			
 			lblname.removeBorderSolid();		
 			lblname.setText("No miniion is obeying you!");
 			lblname.setBorderSolid(new Vector4f(2f, 2f, 2f, 2f), Color.magenta);

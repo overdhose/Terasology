@@ -27,6 +27,6 @@ import org.terasology.entitySystem.Component;
  * selected blocks will get grouped by height, and minions will gather top to
  * bottom startpoint should be a miniion (waypoint) flag block
  */
-public class MinionCommandComponent implements Component {
+public class MiniionCommandComponent implements Component {
 
 }

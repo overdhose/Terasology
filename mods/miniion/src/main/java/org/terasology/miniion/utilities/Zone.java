@@ -24,6 +24,7 @@ import org.lwjgl.opengl.GL11;
 import org.terasology.game.CoreRegistry;
 import org.terasology.logic.manager.ShaderManager;
 import org.terasology.math.Vector3i;
+import org.terasology.miniion.components.MiniionSettingsComponent;
 import org.terasology.miniion.componentsystem.controllers.MinionSystem;
 import org.terasology.miniion.minionenum.ZoneType;
 import org.terasology.rendering.primitives.Mesh;
@@ -198,6 +199,7 @@ public class Zone {
 
 	public void render() {
 		if(MinionSystem.getNewZone() != null && this.equals(MinionSystem.getNewZone())){
+			if(MinionSystem.getSettings() == null) return;
 	        ShaderManager.getInstance().enableDefault();
 	        worldProvider = CoreRegistry.get(WorldProvider.class);
 
@@ -223,7 +225,8 @@ public class Zone {
 		            	GL11.glTranslated(renderpos.x - cameraPosition.x, renderpos.y - cameraPosition.y, renderpos.z - cameraPosition.z);
 		            	mesh.render();
 		            	GL11.glPopMatrix();
-		            	if(!outofboundselection() && MinionSystem.isSelectionShown()){
+		            	MiniionSettingsComponent settingcomp = MinionSystem.getSettings().getComponent(MiniionSettingsComponent.class);
+		            	if(!outofboundselection() && settingcomp.showSelection){
 			            	for (int x = getMinBounds().x; x <= getMaxBounds().x; x++) {
 				    			for (int z = getMinBounds().z; z <= getMaxBounds().z; z++) {
 				    				for (int y = getMaxBounds().y; y >= getMinBounds().y; y--) {
