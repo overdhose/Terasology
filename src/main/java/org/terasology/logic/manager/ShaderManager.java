@@ -78,7 +78,7 @@ public class ShaderManager {
         createAndStoreShaderProgram("blur", new ShaderParametersDefault());
         createAndStoreShaderProgram("down", new ShaderParametersDefault());
         createAndStoreShaderProgram("hdr", new ShaderParametersHdr());
-        createAndStoreShaderProgram("sky", new ShaderParametersDefault());
+        createAndStoreShaderProgram("sky", new ShaderParametersSky());
         createAndStoreShaderProgram("chunk", new ShaderParametersChunk());
         createAndStoreShaderProgram("particle", new ShaderParametersParticle());
         createAndStoreShaderProgram("block", new ShaderParametersBlock());
@@ -170,5 +170,13 @@ public class ShaderManager {
      */
     public ShaderProgram getShaderProgram(String s) {
         return _shaderPrograms.get(s);
+    }
+
+    /**
+     *
+     * @return
+     */
+    public HashMap<String, ShaderProgram> getShaderPrograms() {
+        return _shaderPrograms;
     }
 }

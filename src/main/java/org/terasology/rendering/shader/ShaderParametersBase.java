@@ -15,24 +15,22 @@
  */
 package org.terasology.rendering.shader;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.terasology.asset.Assets;
 import org.terasology.game.CoreRegistry;
 import org.terasology.logic.LocalPlayer;
 import org.terasology.logic.manager.Config;
-import org.terasology.rendering.assets.Texture;
+import org.terasology.properties.IPropertyProvider;
+import org.terasology.properties.Property;
 import org.terasology.rendering.world.WorldRenderer;
 import org.terasology.world.WorldProvider;
 
-import static org.lwjgl.opengl.GL11.glBindTexture;
+import java.util.List;
 
 /**
- * Shader parameters for the Block shader program.
+ * Basic shader parameters for all shader program.
  *
  * @author Benjamin Glatzel <benjamin.glatzel@me.com>
  */
-public class ShaderParametersBase implements IShaderParameters {
+public class ShaderParametersBase  implements IPropertyProvider, IShaderParameters {
 
     public ShaderParametersBase() {
     }
@@ -60,4 +58,7 @@ public class ShaderParametersBase implements IShaderParameters {
         }
     }
 
+    @Override
+    public void addPropertiesToList(List<Property> properties) {
+    }
 }

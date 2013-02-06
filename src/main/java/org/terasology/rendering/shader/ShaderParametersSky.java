@@ -15,40 +15,36 @@
  */
 package org.terasology.rendering.shader;
 
-import static org.lwjgl.opengl.GL11.glBindTexture;
-
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.terasology.asset.Assets;
 import org.terasology.game.CoreRegistry;
 import org.terasology.logic.LocalPlayer;
-import org.terasology.rendering.assets.Texture;
+import org.terasology.logic.manager.Config;
+import org.terasology.properties.IPropertyProvider;
+import org.terasology.properties.Property;
+import org.terasology.rendering.world.WorldRenderer;
+import org.terasology.world.WorldProvider;
+
+import java.util.List;
 
 /**
- * Shader parameters for the Block shader program.
+ * Basic shader parameters for all shader program.
  *
  * @author Benjamin Glatzel <benjamin.glatzel@me.com>
  */
-public class ShaderParametersBlock extends ShaderParametersBase {
+public class ShaderParametersSky extends ShaderParametersBase {
 
-    public ShaderParametersBlock() {
+    Property colorExp = new Property("colorExp", 12.0f, 0.0f, 100.0f);
+
+    public ShaderParametersSky() {
     }
 
     @Override
     public void applyParameters(ShaderProgram program) {
         super.applyParameters(program);
-
-        Texture terrainTex = Assets.getTexture("engine:terrain");
-        if (terrainTex == null) {
-            return;
-        }
-
-        GL13.glActiveTexture(GL13.GL_TEXTURE0);
-        glBindTexture(GL11.GL_TEXTURE_2D, terrainTex.getId());
-
-        program.setFloat3("colorOffset", 1.0f, 1.0f, 1.0f);
-        program.setInt("textured", 1);
-        program.setFloat("alpha", 1.0f);
+        program.setFloat("colorExp", (Float) colorExp.getValue());
     }
 
+    @Override
+    public void addPropertiesToList(List<Property> properties) {
+        properties.add(colorExp);
+    }
 }
