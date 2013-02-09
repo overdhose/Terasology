@@ -55,7 +55,7 @@ public class MinionSystem implements EventHandlerSystem {
 	private static EntityRef activeminion;
 	// TODO : a better way to save / load zones, but it does the trick
 	private static EntityRef zonelist, settingslist;
-	private static Zone newzone;
+	private static ZoneWithRender newzone;
 		
 	private static List<MinionRecipe> recipeslist = new ArrayList<MinionRecipe>();
 
@@ -76,7 +76,8 @@ public class MinionSystem implements EventHandlerSystem {
 		// ui to manage summoned minions, selecting one sets it active!
 		//guiManager.registerWindow("oreobook", UIScreenBookOreo.class);
 		// ui to manage zones
-		guiManager.registerWindow("zonebook", UIZoneBook.class); 
+		guiManager.registerWindow("zonebook", UIZoneBook.class);
+		guiManager.registerWindow("radialmain", UIRadial.class); 
 		createZoneList();
 		initRecipes();
 	}
@@ -172,7 +173,7 @@ public class MinionSystem implements EventHandlerSystem {
 	}
 	
 	public static void startNewSelection(Vector3i startpos){
-		newzone = new Zone();
+		newzone = new ZoneWithRender();
 		newzone.setStartPosition(startpos);
 	}
 
@@ -186,7 +187,7 @@ public class MinionSystem implements EventHandlerSystem {
 		newzone = null;
 	}
 
-	public static Zone getNewZone(){
+	public static ZoneWithRender getNewZone(){
 		return newzone;
 	}
 

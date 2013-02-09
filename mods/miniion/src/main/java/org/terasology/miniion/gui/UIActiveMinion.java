@@ -331,14 +331,14 @@ public class UIActiveMinion extends UIWindow{
 		uiMainlist.setPosition(new Vector2f(0, 132));
 		uiMainlist.setBackgroundImage("miniion:modularback");
 		uiMainlist.setVisible(false);
-		this.addDisplayElement(uiMainlist);
+		backgroundmain.addDisplayElement(uiMainlist);
 		
 		uiDetailList = new UIList();
 		uiDetailList.setSize(new Vector2f(100, 300));
 		uiDetailList.setPosition(new Vector2f(0, 132));
 		uiDetailList.setBackgroundImage("miniion:modularback");
 		uiDetailList.setVisible(false);
-		this.addDisplayElement(uiDetailList);							
+		backgroundmain.addDisplayElement(uiDetailList);							
 		
 		uistats = new UIScreenStats();
 		uistats.setSize(new Vector2f(300,600));
