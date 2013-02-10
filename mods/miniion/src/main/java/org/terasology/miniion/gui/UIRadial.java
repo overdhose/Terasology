@@ -13,8 +13,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.asset.Assets;
 import org.terasology.componentSystem.controllers.MenuControlSystem;
+import org.terasology.entitySystem.EntityRef;
+import org.terasology.events.ActivateEvent;
 import org.terasology.game.CoreRegistry;
 import org.terasology.input.CameraTargetSystem;
+import org.terasology.logic.LocalPlayer;
 import org.terasology.logic.manager.GUIManager;
 import org.terasology.miniion.componentsystem.controllers.MinionSystem;
 import org.terasology.rendering.gui.framework.UIDisplayElement;
@@ -28,9 +31,11 @@ public class UIRadial extends UIWindow{
 
 	private final int iconsize = 72;
 	private static final Logger logger = LoggerFactory.getLogger(UIRadial.class);
-	private final UIImage radno, radne, radea, radse, radso, radsw, radwe, radnw;
-	private final UIImage radnosel, radnesel, radeasel, radsesel, radsosel, radswsel, radwesel, radnwsel;
-	//private final UIModButtonZodiac zod0, zod1, zod2, zod3, zod4, zod5, zod6, zod7, zod8, zod9, zod10, zod11, zod12;
+	private static int level = 0;
+	private final UIImage radmid, radinno, radinse, radno, radne, radea, radse, radso, radsw, radwe, radnw;
+	private final UIImage radmidIcon, radinnoIcon, radinseIcon, radnoIcon, radneIcon, radeaIcon, radseIcon, radsoIcon, radswIcon, radweIcon, radnwIcon;
+	private final UIImage radinnosel, radnosel, radinsesel, radnesel, radeasel, radsesel, radsosel, radswsel, radwesel, radnwsel;
+
 	 /** The bounds around which we're rendering a menu. */
     protected Rectangle tbounds;
 
@@ -52,7 +57,9 @@ public class UIRadial extends UIWindow{
 		public void up(UIDisplayElement element, int button,
 				boolean intersect) {
 			if (button == 1) {
+				// get the radial menu item that was clicked and excute matching action
 				int menu = getMenuItem(Mouse.getX(), Mouse.getY());
+				// the radial always closes , even if nothing was returned
 				executeClick(menu);
 			}
 		}
@@ -75,56 +82,27 @@ public class UIRadial extends UIWindow{
 		setHorizontalAlign(EHorizontalAlign.LEFT);
 		addMouseButtonListener(radialListener);
 		setVisible(true);
-		/*
-		backgroundmain = new UIImage();
-		backgroundmain.setTexture(Assets.getTexture("miniion:radialmain"));
-		backgroundmain.setSize(new Vector2f(500, 500));
-		backgroundmain.setPosition(new Vector2f(50, 50));
-		backgroundmain.setVisible(true);
-		addDisplayElement(backgroundmain);*/
-		/*
-		zod0  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.balance);
-		zod0.setId("zod0");
-		zod0.setVisible(true);		
-		zod1  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.cancer);
-		zod1.setId("zod1");
-		zod1.setVisible(true);		
-		zod2  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.scorpio);
-		zod2.setId("zod2");
-		zod2.setVisible(true);		
-		zod3  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.sagitarius);
-		zod3.setId("zod3");
-		zod3.setVisible(true);		
-		zod4  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.taurus);
-		zod4.setId("zod4");
-		zod4.setVisible(true);		
-		zod5  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.capricorn);
-		zod5.setId("zod5");
-		zod5.setVisible(true);		
-		zod6  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.leo);
-		zod6.setId("zod6");
-		zod6.setVisible(true);		
-		zod7  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.aquarius);
-		zod7.setId("zod7");
-		zod7.setVisible(true);		
-		zod8  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.ram);
-		zod8.setId("zod8");
-		zod8.setVisible(true);		
-		zod9  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.gemini);
-		zod9.setId("zod9");
-		zod9.setVisible(true);		
-		zod10  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.virgo);
-		zod10.setId("zod10");
-		zod10.setVisible(true);		
-		zod11  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.pisces);
-		zod11.setId("zod11");
-		zod11.setVisible(true);
-		//13th middle invent icon
-		zod12  = new UIModButtonZodiac(new Vector2f(iconsize, iconsize), UIModButtonZodiac.ButtonType.chest);
-		zod12.setId("zod12");
-		zod12.addMouseButtonListener(radialListener);
-		zod12.setPosition(new Vector2f(264,264));
-		zod12.setVisible(true);*/
+		
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  
+		 * init radial menu items background
+		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+		radmid = new UIImage();
+		radmid.setTexture(Assets.getTexture("miniion:radmid"));
+		radmid.setSize(new Vector2f(66, 66));
+		radmid.setPosition(new Vector2f(Display.getWidth()/2 - 33, Display.getHeight()/2 - 33));
+		radmid.setVisible(true);
+				
+		radinno = new UIImage();
+		radinno.setTexture(Assets.getTexture("miniion:radinno"));
+		radinno.setSize(new Vector2f(128, 62));
+		radinno.setPosition(new Vector2f(Display.getWidth()/2 - 64, Display.getHeight()/2 - 81));
+		radinno.setVisible(true);
+
+		radinse = new UIImage();
+		radinse.setTexture(Assets.getTexture("miniion:radinse"));
+		radinse.setSize(new Vector2f(77, 110));
+		radinse.setPosition(new Vector2f(Display.getWidth()/2 + 6, Display.getHeight()/2 - 29));
+		radinse.setVisible(true);
 		
 		radno = new UIImage();
 		radno.setTexture(Assets.getTexture("miniion:radno"));
@@ -182,106 +160,131 @@ public class UIRadial extends UIWindow{
 		radnw.setVisible(true);
 		addDisplayElement(radnw);
 		
-		//selection auras
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  
+		 * menu icons, texture set in switchlevel (shown over radial menu items background)
+		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+		radmidIcon = new UIImage();		
+		radmidIcon.setSize(new Vector2f(97, 55));
+		radmidIcon.setPosition(new Vector2f(Display.getWidth()/2 - 49, Display.getHeight()/2 - 139));
+		radmidIcon.setVisible(false);
+		
+		radinnoIcon= new UIImage();
+		radinnoIcon.setSize(new Vector2f(128, 62));
+		radinnoIcon.setPosition(new Vector2f(Display.getWidth()/2 - 64, Display.getHeight()/2 - 81));
+		radinnoIcon.setVisible(false);
+		
+		radinseIcon= new UIImage();
+		radinseIcon.setSize(new Vector2f(77, 110));
+		radinseIcon.setPosition(new Vector2f(Display.getWidth()/2 + 6, Display.getHeight()/2 - 29));
+		radinseIcon.setVisible(false);
+		
+		radnoIcon = new UIImage();		
+		radnoIcon.setSize(new Vector2f(97, 55));
+		radnoIcon.setPosition(new Vector2f(Display.getWidth()/2 - 49, Display.getHeight()/2 - 139));
+		radnoIcon.setVisible(false);		
+		
+		radneIcon = new UIImage();		
+		radneIcon.setSize(new Vector2f(89, 90));
+		radneIcon.setPosition(new Vector2f(Display.getWidth()/2 + 38, Display.getHeight()/2 - 127));
+		radneIcon.setVisible(false);		
+		
+		radeaIcon = new UIImage();		
+		radeaIcon.setSize(new Vector2f(55, 97));
+		radeaIcon.setPosition(new Vector2f(Display.getWidth()/2 + 84, Display.getHeight()/2 - 49));
+		radeaIcon.setVisible(false);
+				
+		radseIcon = new UIImage();
+		radseIcon.setSize(new Vector2f(89, 90));
+		radseIcon.setPosition(new Vector2f(Display.getWidth()/2 + 37, Display.getHeight()/2 + 37));
+		radseIcon.setVisible(false);
+				
+		radsoIcon = new UIImage();		
+		radsoIcon.setSize(new Vector2f(97, 55));
+		radsoIcon.setPosition(new Vector2f(Display.getWidth()/2 - 49, Display.getHeight()/2 + 84));
+		radsoIcon.setVisible(false);
+				
+		radswIcon = new UIImage();		
+		radswIcon.setSize(new Vector2f(89, 90));
+		radswIcon.setPosition(new Vector2f(Display.getWidth()/2 - 126, Display.getHeight()/2 + 38));
+		radswIcon.setVisible(false);
+				
+		radweIcon = new UIImage();		
+		radweIcon.setSize(new Vector2f(55, 97));
+		radweIcon.setPosition(new Vector2f(Display.getWidth()/2 - 139, Display.getHeight()/2 - 49));
+		radweIcon.setVisible(false);
+				
+		radnwIcon = new UIImage();		
+		radnwIcon.setSize(new Vector2f(89, 90));
+		radnwIcon.setPosition(new Vector2f(Display.getWidth()/2 - 126, Display.getHeight()/2 - 127));
+		radnwIcon.setVisible(false);
+				
+		/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  
+		 * init transparent selection indicators around radial menu items background
+		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+		//128,62  //187 169
+		radinnosel = new UIImage();
+		radinnosel.setTexture(Assets.getTexture("miniion:radinnosel"));
+		radinnosel.setSize(new Vector2f(132, 66));
+		radinnosel.setPosition(new Vector2f(Display.getWidth()/2 - 66, Display.getHeight()/2 - 83));
+		radinnosel.setVisible(false);
+		//77 110 //  256 221
+		radinsesel = new UIImage();
+		radinsesel.setTexture(Assets.getTexture("miniion:radinsesel"));
+		radinsesel.setSize(new Vector2f(81, 114));
+		radinsesel.setPosition(new Vector2f(Display.getWidth()/2 + 4, Display.getHeight()/2 - 31));
+		radinsesel.setVisible(false);
+				
 		radnosel = new UIImage();
 		radnosel.setTexture(Assets.getTexture("miniion:radnosel"));
 		radnosel.setSize(new Vector2f(101, 59));
 		radnosel.setPosition(new Vector2f(Display.getWidth()/2 - 51, Display.getHeight()/2 - 141));
-		radnosel.setVisible(false);
-		addDisplayElement(radnosel);
+		radnosel.setVisible(false);		
 		
 		radnesel = new UIImage();
 		radnesel.setTexture(Assets.getTexture("miniion:radnesel"));
 		radnesel.setSize(new Vector2f(93, 94));
 		radnesel.setPosition(new Vector2f(Display.getWidth()/2 + 36, Display.getHeight()/2 - 129));
 		radnesel.setVisible(false);
-		addDisplayElement(radnesel);
 		
 		radeasel = new UIImage();
 		radeasel.setTexture(Assets.getTexture("miniion:radeasel"));
 		radeasel.setSize(new Vector2f(59, 101));
 		radeasel.setPosition(new Vector2f(Display.getWidth()/2 + 82, Display.getHeight()/2 - 51));
 		radeasel.setVisible(false);
-		addDisplayElement(radeasel);
 		
 		radsesel = new UIImage();
 		radsesel.setTexture(Assets.getTexture("miniion:radsesel"));
 		radsesel.setSize(new Vector2f(94, 94));
 		radsesel.setPosition(new Vector2f(Display.getWidth()/2 + 35, Display.getHeight()/2 + 35));
 		radsesel.setVisible(false);
-		addDisplayElement(radsesel);
 		
 		radsosel = new UIImage();
 		radsosel.setTexture(Assets.getTexture("miniion:radsosel"));
 		radsosel.setSize(new Vector2f(101, 59));
 		radsosel.setPosition(new Vector2f(Display.getWidth()/2 - 51, Display.getHeight()/2 + 82));
 		radsosel.setVisible(false);
-		addDisplayElement(radsosel);
 		
 		radswsel = new UIImage();
 		radswsel.setTexture(Assets.getTexture("miniion:radswsel"));
 		radswsel.setSize(new Vector2f(94, 93));
 		radswsel.setPosition(new Vector2f(Display.getWidth()/2 - 129, Display.getHeight()/2 + 36));
 		radswsel.setVisible(false);
-		addDisplayElement(radswsel);
 		
 		radwesel = new UIImage();
 		radwesel.setTexture(Assets.getTexture("miniion:radwesel"));
 		radwesel.setSize(new Vector2f(59, 101));
 		radwesel.setPosition(new Vector2f(Display.getWidth()/2 - 141, Display.getHeight()/2 - 51));
 		radwesel.setVisible(false);
-		addDisplayElement(radwesel);
 		
 		radnwsel = new UIImage();
 		radnwsel.setTexture(Assets.getTexture("miniion:radnwsel"));
 		radnwsel.setSize(new Vector2f(95, 95));
 		radnwsel.setPosition(new Vector2f(Display.getWidth()/2 - 130, Display.getHeight()/2 - 130));
 		radnwsel.setVisible(false);
-		addDisplayElement(radnwsel);
 		
-		/*items.add(0,zod0);
-		items.add(1,zod1);
-		items.add(2,zod2);
-		items.add(3,zod3);
-		items.add(4,zod4);
-		items.add(5,zod5);
-		items.add(6,zod6);
-		items.add(7,zod7);
-		items.add(8,zod8);
-		items.add(9,zod9);
-		items.add(10,zod10);
-		items.add(11,zod11);		
-		
-		double radius = 250f;
-		//leave a gap of so that iconsize + gap = 131
-		//to go around full circle. adjust according if more / less entries. 
-		double padding = 59;
-        double theta = (iconsize + padding) / radius ;
-        double angle = -Math.PI/2;
-		for(int x = 0; x < 12; x++){
-			UIModButtonZodiac tmpBtn = items.get(x);
-			tmpBtn.addMouseButtonListener(radialListener);
-			int ix = (int)(radius * Math.cos(angle));
-            int iy = (int)(radius * Math.sin(angle));
-            tmpBtn.setPosition(new Vector2f( (int)((ix - (iconsize + padding)/2) + this.getSize().x/2 +20), (iy - iconsize/2) + this.getSize().y/2));
-            // move along the circle
-            angle += theta;            
-		}*/
-		
-		/*addDisplayElement(zod0);
-		addDisplayElement(zod1);
-		addDisplayElement(zod2);
-		addDisplayElement(zod3);
-		addDisplayElement(zod4);
-		addDisplayElement(zod5);
-		addDisplayElement(zod6);
-		addDisplayElement(zod7);
-		addDisplayElement(zod8);
-		addDisplayElement(zod9);
-		addDisplayElement(zod10);
-		addDisplayElement(zod11);
-		addDisplayElement(zod12);*/
-		
+		addDisplayElement(radmid);
+		addDisplayElement(radinno);
+		addDisplayElement(radinse);
 		addDisplayElement(radno);
 		addDisplayElement(radne);
 		addDisplayElement(radea);
@@ -291,6 +294,8 @@ public class UIRadial extends UIWindow{
 		addDisplayElement(radwe);
 		addDisplayElement(radnw);
 		
+		addDisplayElement(radinnosel);
+		addDisplayElement(radinsesel);
 		addDisplayElement(radnosel);
 		addDisplayElement(radnesel);
 		addDisplayElement(radeasel);
@@ -299,69 +304,64 @@ public class UIRadial extends UIWindow{
 		addDisplayElement(radswsel);
 		addDisplayElement(radwesel);
 		addDisplayElement(radnwsel);
+		
+		addDisplayElement(radmidIcon);
+		addDisplayElement(radinnoIcon);
+		addDisplayElement(radinseIcon);
+		addDisplayElement(radnoIcon);
+		addDisplayElement(radneIcon);
+		addDisplayElement(radeaIcon);
+		addDisplayElement(radseIcon);
+		addDisplayElement(radsoIcon);
+		addDisplayElement(radswIcon);
+		addDisplayElement(radweIcon);
+		addDisplayElement(radnwIcon);
 	}
 	
 	@Override
 	public void open() {
-		//super.open();
 		setFocus(this);
         setVisible(true);
 
         getGUIManager().openWindow(this);
         getGUIManager().checkMouseGrabbing();
-		//radiallayout();
-	}
+        //always open the radial at top level
+        switchlevel(0);
+	}	
 	
-	protected void radiallayout(){
-		
-		radnesel.setVisible(false);
-		radeasel.setVisible(false);
-		radsesel.setVisible(false);
-		radsosel.setVisible(false);
-		radswsel.setVisible(false);
-		radwesel.setVisible(false);
-		radnwsel.setVisible(false);
-		radnosel.setVisible(false);
-		
-		getMenuItem(Mouse.getX(), Mouse.getY());
-		CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);
-		if(cameraTargetSystem.isTargetAvailable()){
-			if(MinionSystem.getNewZone() != null){
-				radsesel.setVisible(true);
-				if(MinionSystem.getNewZone().getStartPosition() == null){
-					radso.setVisible(false);
-				}else{
-					radso.setVisible(true);
-				}
-			}else{
-				radse.setVisible(true);
-				radso.setVisible(false);
-			}
-		}else{
-			radse.setVisible(false);
-			radso.setVisible(false);
-		}
-
-	}
-	
+	/**
+	 * Execute action corresponding to button and level
+	 * @param menu
+	 * 				The number of the radial menu item that was clicked
+	 */
 	protected void executeClick(int menu){
-		switch(menu){			
-			case 7 : {
-				CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);
-				if(cameraTargetSystem.isTargetAvailable()){				
-					MinionSystem.startNewSelection(cameraTargetSystem.getTargetBlockPosition());
-				}
+		switch(level){
+			case 5 : {
+				zonelevelClick(menu);
 				break;
 			}
-			case 8 : {
-				CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);
-				if(cameraTargetSystem.isTargetAvailable()){				
-					MinionSystem.endNewSelection(cameraTargetSystem.getTargetBlockPosition());
-				}
+			default : {
+				toplevelClick(menu);
 				break;
 			}
-			case 9 : {
-				MinionSystem.resetNewSelection();				
+		}
+		close();
+	}
+	
+	//top level actions
+	private void toplevelClick(int menu){
+		switch(menu){
+			case 0 : {
+				CoreRegistry.get(GUIManager.class).openWindow(MenuControlSystem.PAUSE_MENU);				
+				break;
+			}
+			case 1 : {
+				CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);
+				if(cameraTargetSystem.isTargetAvailable()){					
+					EntityRef locplayer = CoreRegistry.get(LocalPlayer.class).getEntity();
+					cameraTargetSystem.getTarget().send(new ActivateEvent(cameraTargetSystem.getTarget(), locplayer));
+				}
+				
 				break;
 			}
 			case 10 : {
@@ -370,8 +370,7 @@ public class UIRadial extends UIWindow{
 				break;
 			}
 			case 11 : {
-				CoreRegistry.get(GUIManager.class).openWindow(MenuControlSystem.PAUSE_MENU);				
-				break;
+				//use item
 			}
 			case 12 : {
 				CoreRegistry.get(GUIManager.class).openWindow(MenuControlSystem.INVENTORY);				
@@ -381,20 +380,178 @@ public class UIRadial extends UIWindow{
 				break;
 			}
 		}
-		close();
 	}
+	
+	// zone submenu actions
+	private void zonelevelClick(int menu){
+		switch(menu){			
+		case 5 : {
+			CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);
+			if(cameraTargetSystem.isTargetAvailable()){				
+				MinionSystem.endNewSelection(cameraTargetSystem.getTargetBlockPosition());
+			}			
+			break;
+		}
+		case 6 : {
+			CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);
+			if(cameraTargetSystem.isTargetAvailable()){				
+				MinionSystem.startNewSelection(cameraTargetSystem.getTargetBlockPosition());
+			}
+			break;
+		}
+		case 7 : {
+			MinionSystem.resetNewSelection();				
+			break;
+		}
+		}
+	}
+	
+	
 	
 	@Override
 	public void render() {
-		radiallayout();
+		// costy solution to override default mouseover events which cause focus problems
+		// also enables selection in certain degrees from middle
+		getMenuItem(Mouse.getX(), Mouse.getY());						
 		super.render();
 		
 	}
 	
+	/**
+	 * set the current menu level
+	 * and change the layout of the radial to show sub-menus
+	 * Should be triggered from within getMenuItem normally and on open 
+	 */
+	private void switchlevel(int level){
+		//determine which menu items should be shown depending on level
+		this.level = level;
+		CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);		
+		switch(level){
+			case 5 :{
+				radmidIcon.setTexture(Assets.getTexture("miniion:radea0"));
+				radmidIcon.setSize(new Vector2f(55,97));
+				radmidIcon.setPosition(new Vector2f(Display.getWidth()/2 -28, Display.getHeight()/2 - 49));
+				radmidIcon.setVisible(true);
+				radneIcon.setTexture(Assets.getTexture("miniion:radne5"));
+				radeaIcon.setTexture(Assets.getTexture("miniion:radea5"));
+				radseIcon.setTexture(Assets.getTexture("miniion:radse5"));
+				radno.setVisible(false);
+				radso.setVisible(false);
+				radsw.setVisible(false);
+				radwe.setVisible(false);
+				radnw.setVisible(false);
+				if(MinionSystem.getNewZone() != null){
+					radne.setVisible(true);
+					radse.setVisible(true);										
+				}else{
+					radne.setVisible(false);
+					radse.setVisible(false);
+				}
+				break;
+			}
+			default : {
+				radmidIcon.setVisible(false);
+				radinnoIcon.setTexture(Assets.getTexture("miniion:radinno0"));
+				radinseIcon.setTexture(Assets.getTexture("miniion:radinse0"));
+				radnoIcon.setTexture(Assets.getTexture("miniion:radno0"));
+				radneIcon.setTexture(Assets.getTexture("miniion:radne0"));
+				radeaIcon.setTexture(Assets.getTexture("miniion:radea0"));
+				radseIcon.setTexture(Assets.getTexture("miniion:radse0"));
+				radsoIcon.setTexture(Assets.getTexture("miniion:radso0"));
+				radswIcon.setTexture(Assets.getTexture("miniion:radsw0"));
+				radweIcon.setTexture(Assets.getTexture("miniion:radwe0"));
+				radnwIcon.setTexture(Assets.getTexture("miniion:radnw0"));
+				radno.setVisible(true);
+				radso.setVisible(true);
+				radse.setVisible(false);
+				radsw.setVisible(false);
+				radwe.setVisible(true);
+				radnw.setVisible(true);
+				if(cameraTargetSystem.isTargetAvailable()){
+					radne.setVisible(true);
+					radea.setVisible(true);
+				}else{
+					radne.setVisible(false);
+					radea.setVisible(false);
+				}
+				break;
+			}
+		}
+		//set matching visibility for the icons on the buttons
+		if(radinno.isVisible()) radinnoIcon.setVisible(true);
+		else radinnoIcon.setVisible(false);
+		if(radinse.isVisible()) radinseIcon.setVisible(true);
+		else radinseIcon.setVisible(false);
+		if(radne.isVisible()) radneIcon.setVisible(true);
+		else radneIcon.setVisible(false);
+		if(radea.isVisible()) radeaIcon.setVisible(true);
+		else radeaIcon.setVisible(false);
+		if(radse.isVisible()) radseIcon.setVisible(true);
+		else radseIcon.setVisible(false);
+		if(radso.isVisible()) radsoIcon.setVisible(true);
+		else radsoIcon.setVisible(false);
+		if(radsw.isVisible()) radswIcon.setVisible(true);
+		else radswIcon.setVisible(false);
+		if(radwe.isVisible()) radweIcon.setVisible(true);
+		else radweIcon.setVisible(false);
+		if(radnw.isVisible()) radnwIcon.setVisible(true);
+		else radnwIcon.setVisible(false);
+		if(radno.isVisible()) radnoIcon.setVisible(true);
+		else radnoIcon.setVisible(false);
+	}
+	
+	/**
+	 * Check if a radial menu item is currently selected
+	 * return the number of the selected menu
+	 * and set submenu level if needed 
+	 * @param mousex
+	 * 				the current x position if the mouse
+	 * @param mousey
+	 * 				the current y position if the mouse
+	 * @return
+	 * 				the number of the radial menu item that was selected or -1 if none
+	 */
 	private int getMenuItem(int mousex, int mousey){
 		Vector2f startpoint = new Vector2f(Display.getWidth()/2, Display.getHeight()/2);
 		startpoint.sub(new Vector2f(mousex, mousey));
-		double distance = startpoint.length();			
+		double distance = startpoint.length();
+		
+		//middle of radial
+		if(distance < 34){
+			if(level != 0){
+				switchlevel(0);
+			}
+		}
+		radinnosel.setVisible(false);
+		radinsesel.setVisible(false);
+		// inner 3 buttons
+		if(distance < 80 && distance > 33){
+			int rad = (int) Math.toDegrees(Math.atan2(mousex - Display.getWidth()/2, mousey - Display.getHeight()/2 ));
+			if(rad < 0){
+				rad += 360;
+			}
+			if(310 < rad  || 50 > rad ){
+				if(radinno.isVisible()){
+					radinnosel.setVisible(true);
+				}
+				return 0;
+			}
+			if(70 < rad  && 170 > rad ){
+				if(radinse.isVisible()){
+					radinsesel.setVisible(true);
+				}
+				return 1;
+			}
+		}
+		radnesel.setVisible(false);
+		radeasel.setVisible(false);
+		radsesel.setVisible(false);
+		radsosel.setVisible(false);
+		radswsel.setVisible(false);
+		radwesel.setVisible(false);
+		radnwsel.setVisible(false);
+		radnosel.setVisible(false);
+		// the first ring level
 		if(distance < 139 && distance > 88){
 			int rad = (int) Math.toDegrees(Math.atan2(mousex - Display.getWidth()/2, mousey - Display.getHeight()/2 ));
 			if(rad < 0){
@@ -409,6 +566,9 @@ public class UIRadial extends UIWindow{
 			if(70 < rad  && 110 > rad ){
 				if(radea.isVisible()){
 					radeasel.setVisible(true);
+					if(level != 5){
+						switchlevel(5);
+					}
 				}
 				return 6;
 			}
@@ -448,7 +608,7 @@ public class UIRadial extends UIWindow{
 				}
 				return 12;
 			}
-		}
+		}				
 		return -1;
 	}
 }
