@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.terasology.asset.Assets;
+import org.terasology.components.InventoryComponent;
+import org.terasology.components.ItemComponent;
 import org.terasology.components.LocalPlayerComponent;
 
 import org.terasology.rendering.logic.*;
@@ -31,6 +33,9 @@ import org.terasology.entitySystem.event.AddComponentEvent;
 import org.terasology.events.*;
 import org.terasology.events.inventory.ReceiveItemEvent;
 import org.terasology.game.CoreRegistry;
+import org.terasology.game.Timer;
+import org.terasology.input.binds.RadialButton;
+import org.terasology.input.binds.UseItemButton;
 import org.terasology.logic.LocalPlayer;
 import org.terasology.logic.manager.GUIManager;
 import org.terasology.math.Vector3i;
@@ -50,7 +55,11 @@ public class MinionSystem implements EventHandlerSystem {
 	private LocalPlayer localPlayer;
 	@In
 	private EntityManager entityManager;
-
+	@In 
+	private Timer timer;
+	@In
+	private GUIManager guiManager;
+	
 	//private static final int PRIORITY_LOCAL_PLAYER_OVERRIDE = 160;
 	private static EntityRef activeminion;
 	// TODO : a better way to save / load zones, but it does the trick
@@ -58,16 +67,17 @@ public class MinionSystem implements EventHandlerSystem {
 	private static ZoneWithRender newzone;
 		
 	private static List<MinionRecipe> recipeslist = new ArrayList<MinionRecipe>();
-
-	private GUIManager guiManager;
+	
 	private BlockItemFactory blockItemFactory;
+	
+	private long lastInteraction;
 
 
 	@Override
 	public void initialise() {
 		ModIcons.loadIcons();
 		createSettings();
-		guiManager = CoreRegistry.get(GUIManager.class);
+		lastInteraction = timer.getTimeInMs();
 		blockItemFactory = new BlockItemFactory(entityManager);
 		// experimental popup menu for the minion command tool
 		guiManager.registerWindow("activeminiion", UIActiveMinion.class);
@@ -493,6 +503,32 @@ public class MinionSystem implements EventHandlerSystem {
 		MiniionSettingsComponent settingcomp = settingslist.getComponent(MiniionSettingsComponent.class);
 		settingslist.saveComponent(settingcomp);
 	}
+	
+	@ReceiveEvent(components = {LocalPlayerComponent.class, InventoryComponent.class}, priority = EventPriority.PRIORITY_NORMAL)
+    public void onUseItemRequest(RadialButton event, EntityRef entity) {
+			
+        if (!event.isDown() || timer.getTimeInMs() - lastInteraction < 200) {
+            return;
+        }
+        CoreRegistry.get(GUIManager.class).openWindow("radialmain");
+        /*
+        LocalPlayerComponent localPlayerComp = entity.getComponent(LocalPlayerComponent.class);
+        InventoryComponent inventory = entity.getComponent(InventoryComponent.class);
+        if (localPlayerComp.isDead) return;
+
+        EntityRef selectedItemEntity = inventory.itemSlots.get(localPlayerComp.selectedTool);
+
+        ItemComponent item = selectedItemEntity.getComponent(ItemComponent.class);
+        if (item != null && item.usage != ItemComponent.UsageType.NONE) {
+            useItem(event.getTarget(), entity, selectedItemEntity, event.getHitPosition(), event.getHitNormal());
+        }
+
+        lastInteraction = timer.getTimeInMs();
+        localPlayerComp.handAnimation = 0.5f;
+        entity.saveComponent(localPlayerComp);
+        */
+        event.consume();
+    }
 
 	/**
 	 * overrides the default attack event if the minion command item is the

@@ -2,17 +2,19 @@ package org.terasology.miniion.gui;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.vecmath.Vector2f;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.asset.Assets;
 import org.terasology.componentSystem.controllers.MenuControlSystem;
+import org.terasology.components.InventoryComponent;
+import org.terasology.craft.events.crafting.RadialCraftEvent;
 import org.terasology.entitySystem.EntityRef;
 import org.terasology.events.ActivateEvent;
 import org.terasology.game.CoreRegistry;
@@ -25,17 +27,23 @@ import org.terasology.rendering.gui.framework.events.MouseButtonListener;
 import org.terasology.rendering.gui.widgets.UIImage;
 import org.terasology.rendering.gui.widgets.UIWindow;
 
-import static org.lwjgl.opengl.GL11.*;
 
+/**
+ * a radial menu currently bound to the radial tool item.4
+ * @author od
+ *
+ */
 public class UIRadial extends UIWindow{
 
 	private final int iconsize = 72;
+	private int slotStart = 0, slotEnd = 20;
 	private static final Logger logger = LoggerFactory.getLogger(UIRadial.class);
-	private static int level = 0;
-	private final UIImage radmid, radinno, radinse, radno, radne, radea, radse, radso, radsw, radwe, radnw;
-	private final UIImage radmidIcon, radinnoIcon, radinseIcon, radnoIcon, radneIcon, radeaIcon, radseIcon, radsoIcon, radswIcon, radweIcon, radnwIcon;
-	private final UIImage radinnosel, radnosel, radinsesel, radnesel, radeasel, radsesel, radsosel, radswsel, radwesel, radnwsel;
-
+	private static int level = 0, previouslevel = 0;
+	private final UIImage radmid, radinno, radinse, radinsw, radno, radne, radea, radse, radso, radsw, radwe, radnw;
+	private final UIImage radmidIcon, radinnoIcon, radinseIcon, radinswIcon, radnoIcon, radneIcon, radeaIcon, radseIcon, radsoIcon, radswIcon, radweIcon, radnwIcon;
+	private final UIImage radinnosel, radinsesel, radinswsel, radnosel, radnesel, radeasel, radsesel, radsosel, radswsel, radwesel, radnwsel;
+	private List<UIModItemCell> cells = new ArrayList<UIModItemCell>();
+	
 	 /** The bounds around which we're rendering a menu. */
     protected Rectangle tbounds;
 
@@ -48,25 +56,22 @@ public class UIRadial extends UIWindow{
 	private MouseButtonListener radialListener = new MouseButtonListener() {
 
 		@Override
-		public void wheel(UIDisplayElement element, int wheel,
-				boolean intersect) {
+		public void wheel(UIDisplayElement element, int wheel,	boolean intersect) {
 
 		}
 
 		@Override
-		public void up(UIDisplayElement element, int button,
-				boolean intersect) {
-			if (button == 1) {
-				// get the radial menu item that was clicked and excute matching action
-				int menu = getMenuItem(Mouse.getX(), Mouse.getY());
-				// the radial always closes , even if nothing was returned
-				executeClick(menu);
+		public void up(UIDisplayElement element, int button, boolean intersect) {
+			if (button == 1 || button == 2) {
+					// get the radial menu item that was clicked and excute matching action
+					int menu = getMenuItem(Mouse.getX(), Mouse.getY());
+					// the radial always closes , even if nothing was returned
+					executeClick(menu);
 			}
 		}
 
 		@Override
-		public void down(UIDisplayElement element, int button,
-				boolean intersect) {
+		public void down(UIDisplayElement element, int button,	boolean intersect) {
 
 		}
 	};
@@ -103,6 +108,12 @@ public class UIRadial extends UIWindow{
 		radinse.setSize(new Vector2f(77, 110));
 		radinse.setPosition(new Vector2f(Display.getWidth()/2 + 6, Display.getHeight()/2 - 29));
 		radinse.setVisible(true);
+		
+		radinsw = new UIImage();
+		radinsw.setTexture(Assets.getTexture("miniion:radinsw"));
+		radinsw.setSize(new Vector2f(77, 110));
+		radinsw.setPosition(new Vector2f(Display.getWidth()/2 - 81, Display.getHeight()/2 - 29));
+		radinsw.setVisible(false);
 		
 		radno = new UIImage();
 		radno.setTexture(Assets.getTexture("miniion:radno"));
@@ -178,6 +189,11 @@ public class UIRadial extends UIWindow{
 		radinseIcon.setPosition(new Vector2f(Display.getWidth()/2 + 6, Display.getHeight()/2 - 29));
 		radinseIcon.setVisible(false);
 		
+		radinswIcon= new UIImage();
+		radinswIcon.setSize(new Vector2f(77, 110));
+		radinswIcon.setPosition(new Vector2f(Display.getWidth()/2 - 81, Display.getHeight()/2 - 29));
+		radinswIcon.setVisible(false);
+		
 		radnoIcon = new UIImage();		
 		radnoIcon.setSize(new Vector2f(97, 55));
 		radnoIcon.setPosition(new Vector2f(Display.getWidth()/2 - 49, Display.getHeight()/2 - 139));
@@ -233,7 +249,13 @@ public class UIRadial extends UIWindow{
 		radinsesel.setSize(new Vector2f(81, 114));
 		radinsesel.setPosition(new Vector2f(Display.getWidth()/2 + 4, Display.getHeight()/2 - 31));
 		radinsesel.setVisible(false);
-				
+		//77 110		//169 221
+		radinswsel = new UIImage();
+		radinswsel.setTexture(Assets.getTexture("miniion:radinswsel"));
+		radinswsel.setSize(new Vector2f(81, 114));
+		radinswsel.setPosition(new Vector2f(Display.getWidth()/2 - 83, Display.getHeight()/2 - 31));
+		radinswsel.setVisible(false);		
+		
 		radnosel = new UIImage();
 		radnosel.setTexture(Assets.getTexture("miniion:radnosel"));
 		radnosel.setSize(new Vector2f(101, 59));
@@ -285,6 +307,7 @@ public class UIRadial extends UIWindow{
 		addDisplayElement(radmid);
 		addDisplayElement(radinno);
 		addDisplayElement(radinse);
+		addDisplayElement(radinsw);
 		addDisplayElement(radno);
 		addDisplayElement(radne);
 		addDisplayElement(radea);
@@ -296,6 +319,7 @@ public class UIRadial extends UIWindow{
 		
 		addDisplayElement(radinnosel);
 		addDisplayElement(radinsesel);
+		addDisplayElement(radinswsel);
 		addDisplayElement(radnosel);
 		addDisplayElement(radnesel);
 		addDisplayElement(radeasel);
@@ -308,6 +332,7 @@ public class UIRadial extends UIWindow{
 		addDisplayElement(radmidIcon);
 		addDisplayElement(radinnoIcon);
 		addDisplayElement(radinseIcon);
+		addDisplayElement(radinswIcon);
 		addDisplayElement(radnoIcon);
 		addDisplayElement(radneIcon);
 		addDisplayElement(radeaIcon);
@@ -325,8 +350,9 @@ public class UIRadial extends UIWindow{
 
         getGUIManager().openWindow(this);
         getGUIManager().checkMouseGrabbing();
-        //always open the radial at top level
-        switchlevel(0);
+        //always open the radial at top level with mouse in middle
+        Mouse.setCursorPosition(Display.getWidth()/2, Display.getHeight()/2);
+        switchlevel(0,false);
 	}	
 	
 	/**
@@ -336,6 +362,12 @@ public class UIRadial extends UIWindow{
 	 */
 	protected void executeClick(int menu){
 		switch(level){
+			case 4: {
+				if(menu > 99){
+					craftlevelClick(menu);
+				}
+				break;
+			}
 			case 5 : {
 				zonelevelClick(menu);
 				break;
@@ -362,6 +394,26 @@ public class UIRadial extends UIWindow{
 					cameraTargetSystem.getTarget().send(new ActivateEvent(cameraTargetSystem.getTarget(), locplayer));
 				}
 				
+				break;
+			}
+			case 2 : {
+				switch(previouslevel){
+					case 5 : {
+						CoreRegistry.get(GUIManager.class).openWindow("zonebook");
+						break;
+					}
+					default : {
+						break;
+					}
+				}
+				break;
+			}
+			case 5:{
+				CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);
+				if(cameraTargetSystem.isTargetAvailable()){					
+					EntityRef locplayer = CoreRegistry.get(LocalPlayer.class).getEntity();
+					locplayer.send(new RadialCraftEvent(cameraTargetSystem.getTarget(),cameraTargetSystem.getHitPosition(), cameraTargetSystem.getHitNormal(), -1));
+				}
 				break;
 			}
 			case 10 : {
@@ -406,6 +458,13 @@ public class UIRadial extends UIWindow{
 		}
 	}
 	
+	private void craftlevelClick(int menu){
+		CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);
+		if(cameraTargetSystem.isTargetAvailable()){					
+			EntityRef locplayer = CoreRegistry.get(LocalPlayer.class).getEntity();				
+			locplayer.send(new RadialCraftEvent(cameraTargetSystem.getTarget(),cameraTargetSystem.getHitPosition(), cameraTargetSystem.getHitNormal(), menu - 100));
+		}
+	}
 	
 	
 	@Override
@@ -422,16 +481,109 @@ public class UIRadial extends UIWindow{
 	 * and change the layout of the radial to show sub-menus
 	 * Should be triggered from within getMenuItem normally and on open 
 	 */
-	private void switchlevel(int level){
+	private void switchlevel(int level, boolean setHistory){
+		//remember the previous level for the special button
+		if(setHistory){
+			this.previouslevel = this.level;
+		}
 		//determine which menu items should be shown depending on level
 		this.level = level;
 		CameraTargetSystem cameraTargetSystem  = CoreRegistry.get(CameraTargetSystem.class);		
 		switch(level){
+			case 4 :{
+				if(cameraTargetSystem.isTargetAvailable()){
+					radmidIcon.setTexture(Assets.getTexture("miniion:radne0"));
+					radmidIcon.setSize(new Vector2f(89,90));
+					radmidIcon.setPosition(new Vector2f(Display.getWidth()/2 -45, Display.getHeight()/2 - 45));
+					radmidIcon.setVisible(true);
+					radno.setVisible(false);
+					radne.setVisible(false);
+					radnesel.setVisible(false);
+					radea.setVisible(false);
+					radse.setVisible(false);
+					radso.setVisible(false);
+					radsw.setVisible(false);
+					radwe.setVisible(false);
+					radnw.setVisible(false);					
+					EntityRef locplayer = CoreRegistry.get(LocalPlayer.class).getEntity();
+					InventoryComponent entityInventory = locplayer.getComponent(InventoryComponent.class);
+					//remove old cells
+		            for (UIModItemCell cell : cells) {
+		                removeDisplayElement(cell);
+		            }
+		            cells.clear();
+		            
+		            //add new cells
+		            setVisible(true);
+
+		            int start = 0;
+		            int end = entityInventory.itemSlots.size();
+		                    
+		            if (slotStart != -1) {
+		                start = slotStart;
+		            }
+		            
+		            if (slotEnd != -1) {
+		            	slotEnd = entityInventory.itemSlots.size();
+		                end = slotEnd;
+		            }
+		            double radstep = Math.PI / 5;
+		            double radcounter = 0-Math.PI/2;
+		            Vector2f cellSize = new Vector2f(32,32);
+		            Vector2f iconPosition = new Vector2f(-7f, -3f);
+		            int slotcounter = 0;
+		            for (int i = start; i < 10; ++i)
+		            {
+		            	UIModItemCell cell = new UIModItemCell(locplayer, cellSize, iconPosition);
+		                cell.setItemEntity(entityInventory.itemSlots.get(i), i);
+		                cell.setSize(cellSize);
+		                
+		                int posx = (int) (Math.cos(radcounter) * 106) + (Display.getWidth()/2) - 16;
+		                //if(posx > Display.getWidth()/2) posx -= 32;
+		                //else posx += 32;
+		                
+		                int posy = (int) (Math.sin(radcounter) * 106) + (Display.getHeight()/2) - 16;
+		                //if(posy > Display.getHeight()/2) posy += 16;
+		                //else posy -= 16;
+		                
+		                cell.setPosition(new Vector2f(posx, posy));
+		                cell.setVisible(true);
+		                radcounter += radstep;
+		                cells.add(cell);
+		                addDisplayElement(cell);
+		            }
+		            radstep = Math.PI / ((slotEnd - 10) /2);
+		            radcounter = 0 - Math.PI/2;
+		            for (int i = 10; i < end; ++i)
+		            {
+		                UIModItemCell cell = new UIModItemCell(locplayer, cellSize, iconPosition);
+		                cell.setItemEntity(entityInventory.itemSlots.get(i), i);
+		                cell.setSize(cellSize);
+		                
+		                int posx = (int) (Math.cos(radcounter) * 180) + (Display.getWidth()/2) - 16;
+		                //if(posx > Display.getWidth()/2) posx -= 32;
+		                //else posx += 32;
+		                
+		                int posy = (int) (Math.sin(radcounter) * 180) + (Display.getHeight()/2) - 16;
+		                //if(posy > Display.getHeight()/2) posy += 16;
+		                //else posy -= 16;
+		                
+		                cell.setPosition(new Vector2f(posx, posy));
+		                cell.setVisible(true);
+		                radcounter += radstep;
+		                cells.add(cell);
+		                addDisplayElement(cell);
+		            }
+				}
+				break;
+			}
 			case 5 :{
 				radmidIcon.setTexture(Assets.getTexture("miniion:radea0"));
 				radmidIcon.setSize(new Vector2f(55,97));
 				radmidIcon.setPosition(new Vector2f(Display.getWidth()/2 -28, Display.getHeight()/2 - 49));
 				radmidIcon.setVisible(true);
+				radinsw.setVisible(true);
+				radinswIcon.setTexture(Assets.getTexture("miniion:radinsw5"));
 				radneIcon.setTexture(Assets.getTexture("miniion:radne5"));
 				radeaIcon.setTexture(Assets.getTexture("miniion:radea5"));
 				radseIcon.setTexture(Assets.getTexture("miniion:radse5"));
@@ -451,22 +603,42 @@ public class UIRadial extends UIWindow{
 			}
 			default : {
 				radmidIcon.setVisible(false);
+				//experimental button, uses the previous selected submenu
+				//to determine content, allowing quick access to a last used item
+				switch(previouslevel){
+					case 4: {
+						//remove old cells
+			            for (UIModItemCell cell : cells) {
+			                removeDisplayElement(cell);
+			            }
+			            cells.clear();
+					}
+					case 5: {
+						radinswIcon.setTexture(Assets.getTexture("miniion:radinsw5"));
+						radinsw.setVisible(true);
+						break;
+					}
+					default: {
+						radinsw.setVisible(false);
+						break;
+					}
+				}
 				radinnoIcon.setTexture(Assets.getTexture("miniion:radinno0"));
 				radinseIcon.setTexture(Assets.getTexture("miniion:radinse0"));
 				radnoIcon.setTexture(Assets.getTexture("miniion:radno0"));
 				radneIcon.setTexture(Assets.getTexture("miniion:radne0"));
 				radeaIcon.setTexture(Assets.getTexture("miniion:radea0"));
-				radseIcon.setTexture(Assets.getTexture("miniion:radse0"));
+				//radseIcon.setTexture(Assets.getTexture("miniion:radse0"));
 				radsoIcon.setTexture(Assets.getTexture("miniion:radso0"));
-				radswIcon.setTexture(Assets.getTexture("miniion:radsw0"));
+				//radswIcon.setTexture(Assets.getTexture("miniion:radsw0"));
 				radweIcon.setTexture(Assets.getTexture("miniion:radwe0"));
 				radnwIcon.setTexture(Assets.getTexture("miniion:radnw0"));
 				radno.setVisible(true);
-				radso.setVisible(true);
+				radso.setVisible(false);
 				radse.setVisible(false);
 				radsw.setVisible(false);
 				radwe.setVisible(true);
-				radnw.setVisible(true);
+				radnw.setVisible(false);
 				if(cameraTargetSystem.isTargetAvailable()){
 					radne.setVisible(true);
 					radea.setVisible(true);
@@ -482,6 +654,8 @@ public class UIRadial extends UIWindow{
 		else radinnoIcon.setVisible(false);
 		if(radinse.isVisible()) radinseIcon.setVisible(true);
 		else radinseIcon.setVisible(false);
+		if(radinsw.isVisible()) radinswIcon.setVisible(true);
+		else radinswIcon.setVisible(false);
 		if(radne.isVisible()) radneIcon.setVisible(true);
 		else radneIcon.setVisible(false);
 		if(radea.isVisible()) radeaIcon.setVisible(true);
@@ -519,17 +693,19 @@ public class UIRadial extends UIWindow{
 		//middle of radial
 		if(distance < 34){
 			if(level != 0){
-				switchlevel(0);
+				switchlevel(0, true);
 			}
 		}
 		radinnosel.setVisible(false);
 		radinsesel.setVisible(false);
+		radinswsel.setVisible(false);
 		// inner 3 buttons
 		if(distance < 80 && distance > 33){
 			int rad = (int) Math.toDegrees(Math.atan2(mousex - Display.getWidth()/2, mousey - Display.getHeight()/2 ));
 			if(rad < 0){
 				rad += 360;
 			}
+			//could calculate gaps and return here, not sure if it would be better though
 			if(310 < rad  || 50 > rad ){
 				if(radinno.isVisible()){
 					radinnosel.setVisible(true);
@@ -542,6 +718,43 @@ public class UIRadial extends UIWindow{
 				}
 				return 1;
 			}
+			if(190 < rad  && 290 > rad ){
+				if(radinsw.isVisible()){
+					radinswsel.setVisible(true);
+				}
+				return 2;
+			}
+		}
+		if(level == 4){
+			if(distance < 123 && distance > 89){
+				float rad = (float) Math.toDegrees(Math.atan2(mousex - Display.getWidth()/2, mousey - Display.getHeight()/2 ));
+				if(rad < 0){
+					rad += 360;
+					//need to catch half of the icon that overlaps -pi <> pi
+					if(rad > 354){
+						return 100;
+					}
+				}
+				//check for click on gap, in this case 1/4th of div
+				int modulus = (int) (rad % 36); 
+				if(9 > modulus  || modulus > 27 ){
+					return (int) Math.round(rad /36) + 100;
+				}
+				return  -1;
+			}
+			if(distance < 197 && distance > 165){
+				float rad = (float) Math.toDegrees(Math.atan2(mousex - Display.getWidth()/2, mousey - Display.getHeight()/2 ));
+				if(rad < 0){
+					rad += 360;
+					//need to catch half of the icon that overlaps -pi <> pi
+					if(rad > 354){
+						return 100;
+					}
+				}
+				//no real need to check for gaps, items are close enough
+				return  (int) Math.round(rad /12) + 110;				
+			}
+			return -1;
 		}
 		radnesel.setVisible(false);
 		radeasel.setVisible(false);
@@ -560,14 +773,17 @@ public class UIRadial extends UIWindow{
 			if(25 < rad  && 65 > rad ){
 				if(radne.isVisible()){
 					radnesel.setVisible(true);
-				}
+					if(level == 0){
+						switchlevel(4, true);
+					}
+				}				
 				return 5;
 			}
 			if(70 < rad  && 110 > rad ){
 				if(radea.isVisible()){
 					radeasel.setVisible(true);
-					if(level != 5){
-						switchlevel(5);
+					if(level == 0){
+						switchlevel(5, true);
 					}
 				}
 				return 6;

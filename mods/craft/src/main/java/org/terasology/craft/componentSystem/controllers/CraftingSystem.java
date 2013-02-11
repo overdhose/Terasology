@@ -13,6 +13,7 @@ import org.terasology.craft.events.crafting.AddItemEvent;
 import org.terasology.craft.events.crafting.ChangeLevelEvent;
 import org.terasology.craft.events.crafting.CheckRefinementEvent;
 import org.terasology.craft.events.crafting.DeleteItemEvent;
+import org.terasology.craft.events.crafting.RadialCraftEvent;
 import org.terasology.craft.rendering.CraftingGrid;
 import org.terasology.entityFactory.BlockItemFactory;
 import org.terasology.entitySystem.*;
@@ -180,7 +181,79 @@ public class CraftingSystem implements UpdateSubscriberSystem, RenderSystem, Eve
             event.consume();
         }
     }
+    
+    @ReceiveEvent(components = {LocalPlayerComponent.class, InventoryComponent.class})
+    public void onRadialActivate(RadialCraftEvent event, EntityRef entity) {
+    	 LocalPlayerComponent localPlayerComp = entity.getComponent(LocalPlayerComponent.class);
+         if (localPlayerComp.isDead) return;
 
+         EntityRef target = event.getTarget();
+
+         BlockComponent block = target.getComponent(BlockComponent.class);
+
+         if(block != null){
+             Block currentBlock = worldProvider.getBlock(block.getPosition());
+
+             EntityManager entityManager = CoreRegistry.get(EntityManager.class);
+
+             if( !currentBlock.isInvisible()  &&
+                     !currentBlock.isLiquid()     &&
+                     !currentBlock.isPenetrable() &&
+                     currentBlock.isCraftPlace()
+               ){
+                 InventoryComponent inventory = entity.getComponent(InventoryComponent.class);
+                 if (localPlayerComp.isDead) return;
+
+                 EntityRef selectedItemEntity;
+                 
+                 ItemComponent item;
+                 if(event.getSlotNumber() == -1){
+                	 selectedItemEntity = inventory.itemSlots.get(localPlayerComp.selectedTool);
+                	 item   = selectedItemEntity.getComponent(ItemComponent.class);
+                 }else{
+                	 selectedItemEntity = inventory.itemSlots.get(event.getSlotNumber());
+                	 item   = selectedItemEntity.getComponent(ItemComponent.class);
+                 }
+
+                 if(item == null){
+                     return;
+                 }
+                 /*EntityRef clonedItem = EntityRef.NULL;
+                 if(item.stackCount > 1){
+                	 clonedItem = entityManager.copy(selectedItemEntity);
+                	 ItemComponent clonedcomp = clonedItem.getComponent(ItemComponent.class);
+                	 clonedcomp.stackCount = 1;
+                	 item.stackCount--;
+                	 clonedItem.saveComponent(clonedcomp);
+                	 selectedItemEntity.saveComponent(item);
+                 }*/
+
+                 BlockItemFactory blockFactory = new BlockItemFactory(entityManager);
+                 EntityRef craftEntity = blockFactory.newInstance(BlockManager.getInstance().getBlockFamily("craft:craft"));
+
+                 BlockItemComponent blockItemComponent = craftEntity.getComponent(BlockItemComponent.class);
+
+                 if(!blockItemComponent.placedEntity.hasComponent(CraftingActionComponent.class)){
+                     blockItemComponent.placedEntity.addComponent(new CraftingActionComponent());
+                 }
+
+                 EntityRef placedEntity = blockItemComponent.placedEntity;
+
+                 if( craftEntity.exists() ){
+                     craftEntity.send(new ActivateEvent(target, selectedItemEntity, new Vector3f(worldRenderer.getActiveCamera().getPosition()), new Vector3f(worldRenderer.getActiveCamera().getPosition()), event.getHitPosition(), event.getHitNormal()));
+                     placedEntity.send(new ActivateEvent(target, selectedItemEntity, new Vector3f(worldRenderer.getActiveCamera().getPosition()), new Vector3f(worldRenderer.getActiveCamera().getPosition()), event.getHitPosition(), event.getHitNormal()));
+                     craftEntity.destroy();
+
+                     if(item.stackCount<=0){
+                         selectedItemEntity.destroy();
+                     }
+
+                     stateCreateBlock = statesCreateBlock.CREATED;
+                 }
+             }
+         }
+    }
+    
     @ReceiveEvent(components = {LocalPlayerComponent.class}, priority = EventPriority.PRIORITY_HIGH)
     public void onDropItem(DropItemButton event, EntityRef entity){
 
